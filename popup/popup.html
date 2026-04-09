@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>RoSuite</title>
+</head>
+<body>
+  <div class="rs-popup">
+    <div class="rs-popup-header">
+      <div class="rs-popup-logo">RS</div>
+      <div class="rs-popup-title">
+        <span class="rs-popup-name">RoSuite</span>
+        <span class="rs-popup-version" id="rs-version">v1.0.0</span>
+      </div>
+    </div>
+
+    <div class="rs-popup-toggles">
+      <label class="rs-popup-toggle">
+        <span>Server Browser</span>
+        <input type="checkbox" data-setting="serverBrowser" checked>
+        <span class="rs-toggle-slider"></span>
+      </label>
+      <label class="rs-popup-toggle">
+        <span>Player Info</span>
+        <input type="checkbox" data-setting="playerInfo" checked>
+        <span class="rs-toggle-slider"></span>
+      </label>
+      <label class="rs-popup-toggle">
+        <span>Profile Enhancements</span>
+        <input type="checkbox" data-setting="profileEnhance" checked>
+        <span class="rs-toggle-slider"></span>
+      </label>
+      <label class="rs-popup-toggle">
+        <span>Trade Calculator</span>
+        <input type="checkbox" data-setting="tradeCalc" checked>
+        <span class="rs-toggle-slider"></span>
+      </label>
+      <label class="rs-popup-toggle">
+        <span>Game Stats</span>
+        <input type="checkbox" data-setting="gameStats" checked>
+        <span class="rs-toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="rs-popup-stats">
+      <div class="rs-popup-stat">
+        <span class="rs-popup-stat-value" id="rs-cache-hits">0</span>
+        <span class="rs-popup-stat-label">Cache Hits</span>
+      </div>
+      <div class="rs-popup-stat">
+        <span class="rs-popup-stat-value" id="rs-servers-scanned">0</span>
+        <span class="rs-popup-stat-label">Servers Scanned</span>
+      </div>
+    </div>
+
+    <div class="rs-popup-actions">
+      <button class="rs-popup-btn" id="rs-clear-cache">Clear Cache</button>
+    </div>
+
+    <div class="rs-popup-footer">
+      <a href="#" id="rs-open-settings">Settings</a>
+      <a href="https://github.com/0xmortuex/rosuite" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/0xmortuex/rosuite/issues" target="_blank" rel="noopener">Report Bug</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

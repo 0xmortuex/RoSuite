@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "RoSuite",
+  "version": "1.0.0",
+  "description": "Free, open-source Roblox enhancement suite — server browser, player info, profile upgrades, trade calculator, and game stats.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.roblox.com/*",
+    "https://games.roblox.com/*",
+    "https://users.roblox.com/*",
+    "https://thumbnails.roblox.com/*",
+    "https://catalog.roblox.com/*",
+    "https://economy.roblox.com/*",
+    "https://friends.roblox.com/*",
+    "https://inventory.roblox.com/*",
+    "https://trades.roblox.com/*",
+    "https://presence.roblox.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.roblox.com/*", "https://web.roblox.com/*"],
+      "js": [
+        "utils/constants.js",
+        "utils/dom.js",
+        "utils/cache.js",
+        "utils/api.js",
+        "content/modules/playerInfo.js",
+        "content/modules/serverBrowser.js",
+        "content/modules/profileEnhance.js",
+        "content/modules/tradeCalc.js",
+        "content/modules/gameStats.js",
+        "content/inject.js"
+      ],
+      "css": ["content/styles/common.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+}

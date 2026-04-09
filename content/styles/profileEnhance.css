@@ -1,0 +1,85 @@
+/* RoSuite Profile Enhancement Styles */
+
+.rs-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.rs-profile-card {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  padding: 14px;
+  transition: border-color var(--rs-transition);
+}
+
+.rs-profile-card:hover {
+  border-color: var(--rs-accent);
+}
+
+.rs-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rs-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.rs-card-body {
+  font-size: 13px;
+}
+
+/* Quick actions */
+.rs-quick-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--rs-border);
+  flex-wrap: wrap;
+}
+
+/* Activity actions */
+.rs-activity-actions {
+  margin-top: 8px;
+}
+
+/* Mutual friends */
+.rs-mutual-friends {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.rs-mutual-avatar {
+  display: inline-block;
+}
+
+.rs-mutual-avatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--rs-border);
+  transition: border-color var(--rs-transition);
+}
+
+.rs-mutual-avatar:hover img {
+  border-color: var(--rs-accent);
+}
+
+.rs-mutual-name {
+  font-size: 12px;
+  color: var(--rs-text-secondary);
+  padding: 4px 8px;
+  background: var(--rs-bg);
+  border-radius: 4px;
+}
+
+.rs-mutual-more {
+  font-size: 11px;
+  color: var(--rs-text-muted);
+  padding: 4px 8px;
+}

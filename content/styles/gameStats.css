@@ -1,0 +1,183 @@
+/* RoSuite Game Stats Styles */
+
+.rs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.rs-stat-card {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  padding: 14px;
+  text-align: center;
+  transition: border-color var(--rs-transition);
+}
+
+.rs-stat-card:hover {
+  border-color: var(--rs-accent);
+}
+
+.rs-stat-players .rs-stat-value {
+  color: var(--rs-accent);
+  font-size: 24px;
+}
+
+.rs-stat-peak .rs-stat-value {
+  color: var(--rs-warning);
+}
+
+/* Rating bar */
+.rs-rating-container {
+  padding: 0 16px 16px;
+}
+
+.rs-rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rs-rating-approval {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rs-text);
+}
+
+.rs-rating-total {
+  font-size: 12px;
+  color: var(--rs-text-secondary);
+}
+
+.rs-rating-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--rs-bg);
+}
+
+.rs-rating-bar-likes {
+  background: var(--rs-success);
+  transition: width 0.3s ease;
+}
+
+.rs-rating-bar-dislikes {
+  background: var(--rs-danger);
+  transition: width 0.3s ease;
+}
+
+.rs-rating-counts {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--rs-text-secondary);
+}
+
+.rs-rating-likes {
+  color: var(--rs-success);
+}
+
+.rs-rating-dislikes {
+  color: var(--rs-danger);
+}
+
+/* Server distribution chart */
+.rs-chart-container {
+  padding: 0 16px 16px;
+}
+
+.rs-chart-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rs-text-secondary);
+  margin-bottom: 12px;
+}
+
+.rs-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+  padding: 0 8px;
+}
+
+.rs-chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.rs-chart-count {
+  font-size: 10px;
+  color: var(--rs-text-secondary);
+  margin-bottom: 4px;
+}
+
+.rs-chart-bar {
+  width: 100%;
+  max-width: 60px;
+  background: var(--rs-accent);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+  min-height: 4px;
+}
+
+.rs-chart-label {
+  font-size: 10px;
+  color: var(--rs-text-muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* Info cards */
+.rs-info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.rs-info-card {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.rs-info-label {
+  font-size: 10px;
+  color: var(--rs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.rs-info-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rs-text);
+}
+
+.rs-info-link {
+  color: var(--rs-accent);
+  text-decoration: none;
+}
+
+.rs-info-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rs-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,196 @@
+/* RoSuite Trade Calculator Styles */
+
+.rs-trade-summary {
+  padding: 16px;
+}
+
+.rs-trade-list {
+  padding: 8px 16px 16px;
+}
+
+.rs-trade-section {
+  margin-bottom: 16px;
+}
+
+.rs-trade-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rs-text-secondary);
+  margin: 0 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rs-border);
+}
+
+/* Trade card */
+.rs-trade-card {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: border-color var(--rs-transition);
+}
+
+.rs-trade-card:hover {
+  border-color: var(--rs-accent);
+}
+
+.rs-trade-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rs-trade-partner {
+  flex: 1;
+  font-size: 13px;
+}
+
+.rs-trade-partner a {
+  color: var(--rs-accent);
+  text-decoration: none;
+}
+
+.rs-trade-partner a:hover {
+  text-decoration: underline;
+}
+
+.rs-trade-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.rs-trade-status-open,
+.rs-trade-status-pending {
+  background: rgba(245, 166, 35, 0.2);
+  color: var(--rs-warning);
+}
+
+.rs-trade-status-completed {
+  background: rgba(0, 176, 111, 0.2);
+  color: var(--rs-success);
+}
+
+.rs-trade-status-declined {
+  background: rgba(231, 76, 60, 0.2);
+  color: var(--rs-danger);
+}
+
+.rs-trade-date {
+  font-size: 11px;
+  color: var(--rs-text-muted);
+}
+
+/* Trade breakdown */
+.rs-trade-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rs-border);
+}
+
+.rs-offer-summary {
+  flex: 1;
+  text-align: center;
+}
+
+.rs-offer-label {
+  font-size: 11px;
+  color: var(--rs-text-secondary);
+  margin-bottom: 4px;
+}
+
+.rs-offer-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rs-text);
+}
+
+.rs-offer-detail {
+  font-size: 10px;
+  color: var(--rs-text-muted);
+  margin-top: 2px;
+}
+
+/* Fairness indicator */
+.rs-fairness {
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: var(--rs-radius);
+  min-width: 90px;
+}
+
+.rs-fairness-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rs-fairness-percent {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.rs-fairness-fair {
+  background: rgba(0, 176, 111, 0.15);
+  color: var(--rs-success);
+}
+
+.rs-fairness-slight {
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--rs-warning);
+}
+
+.rs-fairness-big {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--rs-danger);
+}
+
+.rs-fairness-unknown {
+  background: var(--rs-bg);
+  color: var(--rs-text-muted);
+}
+
+/* Trade details */
+.rs-trade-details {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rs-border);
+}
+
+.rs-trade-items-side {
+  flex: 1;
+}
+
+.rs-trade-items-side h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rs-text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.rs-trade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--rs-bg);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.rs-trade-item-name {
+  color: var(--rs-text);
+}
+
+.rs-trade-item-rap {
+  color: var(--rs-text-secondary);
+  font-size: 11px;
+}

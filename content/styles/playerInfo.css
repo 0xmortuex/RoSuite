@@ -1,0 +1,89 @@
+/* RoSuite Player Info Styles */
+
+.rs-player-list {
+  padding: 8px 12px;
+  border-top: 1px solid var(--rs-border);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.rs-player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background var(--rs-transition);
+  position: relative;
+}
+
+.rs-player-row:hover {
+  background: var(--rs-surface-hover);
+}
+
+.rs-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--rs-bg);
+  flex-shrink: 0;
+}
+
+.rs-player-name-container {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.rs-player-name {
+  color: var(--rs-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rs-player-name:hover {
+  color: var(--rs-accent);
+  text-decoration: underline;
+}
+
+.rs-player-display-name {
+  color: var(--rs-text-secondary);
+  font-size: 11px;
+}
+
+.rs-player-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Player tooltip */
+.rs-player-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 40px;
+  z-index: 1000;
+  background: var(--rs-bg);
+  border: 1px solid var(--rs-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.rs-tooltip-line {
+  font-size: 11px;
+  color: var(--rs-text-secondary);
+  padding: 2px 0;
+}
+
+.rs-tooltip-line:first-child {
+  color: var(--rs-text);
+  font-weight: 500;
+}
