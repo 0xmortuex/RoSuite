@@ -154,7 +154,7 @@
       this.latencyBar = RoSuite.DOM.createElement('div', {
         classes: ['rs-sb-latency'],
         attrs: { id: 'rs-base-latency' },
-        html: '<span class="rs-latency-label">Your connection to Roblox:</span> <span class="rs-latency-value">measuring...</span>',
+        html: '<span class="rs-latency-label">Est. ping to Roblox:</span> <span class="rs-latency-value" title="Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.">calibrating...</span>',
       });
 
       // Ping all visible servers button
@@ -502,8 +502,8 @@
             children: [
               RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-sm', 'rs-ping-btn'],
-                text: 'Ping',
-                attrs: { 'data-server-id': server.id },
+                text: 'Est. Ping',
+                attrs: { 'data-server-id': server.id, title: 'Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.' },
                 events: {
                   click: (e) => this._checkServerPing(e.target, server),
                 },
@@ -644,14 +644,16 @@
       const existing = this.pingResults.get(server.id);
       const el = RoSuite.DOM.createElement('span', {
         classes: ['rs-server-ping'],
-        attrs: { 'data-ping-for': server.id },
+        attrs: {
+          'data-ping-for': server.id,
+          title: 'Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.',
+        },
       });
 
       if (existing) {
         const q = RoSuite.Ping.getQuality(existing.ping);
-        el.textContent = `${existing.ping}ms`;
+        el.textContent = `~${existing.ping}ms`;
         el.style.color = q.color;
-        el.title = `${q.label} - ${existing.method}`;
       }
 
       return el;
@@ -670,12 +672,11 @@
         // Update ping indicator on the card
         const indicator = this.container.querySelector(`[data-ping-for="${server.id}"]`);
         if (indicator) {
-          indicator.textContent = `${result.ping}ms`;
+          indicator.textContent = `~${result.ping}ms`;
           indicator.style.color = quality.color;
-          indicator.title = `${quality.label} - ${result.method}`;
         }
 
-        btn.textContent = `${result.ping}ms`;
+        btn.textContent = `~${result.ping}ms`;
         btn.style.color = quality.color;
       } catch (e) {
         btn.textContent = 'Err';
@@ -705,15 +706,14 @@
             // Update the ping indicator in the rendered card
             const indicator = this.container.querySelector(`[data-ping-for="${result.serverId}"]`);
             if (indicator) {
-              indicator.textContent = `${result.ping}ms`;
+              indicator.textContent = `~${result.ping}ms`;
               indicator.style.color = result.quality.color;
-              indicator.title = result.quality.label;
             }
 
             // Update the ping button too
             const pingBtn = this.container.querySelector(`[data-server-id="${result.serverId}"]`);
             if (pingBtn) {
-              pingBtn.textContent = `${result.ping}ms`;
+              pingBtn.textContent = `~${result.ping}ms`;
               pingBtn.style.color = result.quality.color;
             }
           }
@@ -745,7 +745,7 @@
         valueEl.style.color = 'var(--rs-text-muted)';
       } else {
         const quality = RoSuite.Ping.getQuality(latency);
-        valueEl.textContent = `${latency}ms (${quality.label})`;
+        valueEl.textContent = `~${latency}ms (${quality.label})`;
         valueEl.style.color = quality.color;
       }
     }
