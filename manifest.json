@@ -17,7 +17,8 @@
     "https://friends.roblox.com/*",
     "https://inventory.roblox.com/*",
     "https://trades.roblox.com/*",
-    "https://presence.roblox.com/*"
+    "https://presence.roblox.com/*",
+    "https://gamejoin.roblox.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -30,6 +31,7 @@
         "utils/dom.js",
         "utils/cache.js",
         "utils/api.js",
+        "utils/ping.js",
         "content/modules/playerInfo.js",
         "content/modules/serverBrowser.js",
         "content/modules/profileEnhance.js",

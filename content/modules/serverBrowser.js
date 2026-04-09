@@ -19,6 +19,8 @@
       this.friendIds = new Set();
       this.loggedInUserId = null;
       this.sortMode = 'players-high';
+      this.pingResults = new Map(); // serverId -> { ping, quality }
+      this.pingChecking = false;
       this.filters = {
         minPlayers: 0,
         maxPlayers: Infinity,
@@ -50,6 +52,11 @@
 
       await this._injectUI();
       await this._loadServers();
+
+      // Measure base latency in background
+      RoSuite.Ping.measureBaseLatency().then(latency => {
+        this._updateBaseLatency(latency);
+      });
     }
 
     destroy() {
@@ -143,8 +150,31 @@
         events: { click: () => this._loadServers() },
       });
 
+      // Base latency indicator
+      this.latencyBar = RoSuite.DOM.createElement('div', {
+        classes: ['rs-sb-latency'],
+        attrs: { id: 'rs-base-latency' },
+        html: '<span class="rs-latency-label">Your connection to Roblox:</span> <span class="rs-latency-value">measuring...</span>',
+      });
+
+      // Ping all visible servers button
+      this.pingAllBtn = RoSuite.DOM.createElement('button', {
+        classes: ['rs-btn', 'rs-btn-sm', 'rs-ping-all-btn'],
+        text: 'Check All Pings',
+        events: { click: () => this._pingAllServers() },
+      });
+      this.latencyBar.appendChild(this.pingAllBtn);
+
+      // Ping disclaimer
+      const disclaimer = RoSuite.DOM.createElement('span', {
+        classes: ['rs-ping-disclaimer'],
+        text: 'Ping estimates are approximate',
+      });
+      this.latencyBar.appendChild(disclaimer);
+
       this.container.appendChild(header);
       this.container.appendChild(filterBar);
+      this.container.appendChild(this.latencyBar);
       this.container.appendChild(this.serverList);
       this.container.appendChild(this.loadingEl);
       this.container.appendChild(this.loadMoreBtn);
@@ -173,6 +203,7 @@
         { value: 'players-low', text: 'Players (Low→High)' },
         { value: 'newest', text: 'Newest First' },
         { value: 'oldest', text: 'Oldest First' },
+        { value: 'ping', text: 'Best Connection' },
       ];
 
       options.forEach(opt => {
@@ -388,6 +419,15 @@
             return (a.id || '').localeCompare(b.id || '');
           });
           break;
+        case 'ping':
+          filtered.sort((a, b) => {
+            const pa = this.pingResults.get(a.id);
+            const pb = this.pingResults.get(b.id);
+            const pingA = pa ? pa.ping : 99999;
+            const pingB = pb ? pb.ping : 99999;
+            return pingA - pingB;
+          });
+          break;
       }
 
       this.filteredServers = filtered;
@@ -456,19 +496,28 @@
               }),
             ],
           }),
+          this._createPingIndicator(server),
           RoSuite.DOM.createElement('div', {
             classes: ['rs-server-actions'],
             children: [
               RoSuite.DOM.createElement('button', {
+                classes: ['rs-btn', 'rs-btn-sm', 'rs-ping-btn'],
+                text: 'Ping',
+                attrs: { 'data-server-id': server.id },
+                events: {
+                  click: (e) => this._checkServerPing(e.target, server),
+                },
+              }),
+              RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-primary', 'rs-btn-sm', 'rs-join-btn'],
-                text: 'Join Server',
+                text: 'Join',
                 events: {
                   click: () => this._joinServer(server),
                 },
               }),
               RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-sm', 'rs-expand-btn'],
-                text: 'Players ▼',
+                text: '\u25BC',
                 events: {
                   click: (e) => this._togglePlayerList(e.target, server, card),
                 },
@@ -588,6 +637,116 @@
       const countEl = document.getElementById('rs-server-count');
       if (countEl) {
         countEl.textContent = `${this.filteredServers.length} servers (${this.servers.length} loaded)`;
+      }
+    }
+
+    _createPingIndicator(server) {
+      const existing = this.pingResults.get(server.id);
+      const el = RoSuite.DOM.createElement('span', {
+        classes: ['rs-server-ping'],
+        attrs: { 'data-ping-for': server.id },
+      });
+
+      if (existing) {
+        const q = RoSuite.Ping.getQuality(existing.ping);
+        el.textContent = `${existing.ping}ms`;
+        el.style.color = q.color;
+        el.title = `${q.label} - ${existing.method}`;
+      }
+
+      return el;
+    }
+
+    async _checkServerPing(btn, server) {
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      try {
+        const result = await RoSuite.Ping.estimateServerPing(this.placeId, server.id);
+        const quality = RoSuite.Ping.getQuality(result.ping);
+
+        this.pingResults.set(server.id, result);
+
+        // Update ping indicator on the card
+        const indicator = this.container.querySelector(`[data-ping-for="${server.id}"]`);
+        if (indicator) {
+          indicator.textContent = `${result.ping}ms`;
+          indicator.style.color = quality.color;
+          indicator.title = `${quality.label} - ${result.method}`;
+        }
+
+        btn.textContent = `${result.ping}ms`;
+        btn.style.color = quality.color;
+      } catch (e) {
+        btn.textContent = 'Err';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async _pingAllServers() {
+      if (this.pingChecking) return;
+      this.pingChecking = true;
+
+      const serverIds = this.filteredServers.map(s => s.id);
+      const total = serverIds.length;
+
+      this.pingAllBtn.disabled = true;
+      this.pingAllBtn.textContent = `Checking... 0/${total}`;
+
+      try {
+        await RoSuite.Ping.batchCheckPing(
+          this.placeId,
+          serverIds,
+          (done, totalCount, result) => {
+            this.pingAllBtn.textContent = `Checking... ${done}/${totalCount}`;
+            this.pingResults.set(result.serverId, result);
+
+            // Update the ping indicator in the rendered card
+            const indicator = this.container.querySelector(`[data-ping-for="${result.serverId}"]`);
+            if (indicator) {
+              indicator.textContent = `${result.ping}ms`;
+              indicator.style.color = result.quality.color;
+              indicator.title = result.quality.label;
+            }
+
+            // Update the ping button too
+            const pingBtn = this.container.querySelector(`[data-server-id="${result.serverId}"]`);
+            if (pingBtn) {
+              pingBtn.textContent = `${result.ping}ms`;
+              pingBtn.style.color = result.quality.color;
+            }
+          }
+        );
+
+        this.pingAllBtn.textContent = 'Re-check Pings';
+
+        // If sorted by ping, re-sort
+        if (this.sortMode === 'ping') {
+          this._applyFiltersAndSort();
+        }
+      } catch (e) {
+        RoSuite.DOM.logError('Batch ping failed:', e);
+        this.pingAllBtn.textContent = 'Check All Pings';
+      } finally {
+        this.pingChecking = false;
+        this.pingAllBtn.disabled = false;
+      }
+    }
+
+    _updateBaseLatency(latency) {
+      const el = document.getElementById('rs-base-latency');
+      if (!el) return;
+      const valueEl = el.querySelector('.rs-latency-value');
+      if (!valueEl) return;
+
+      if (latency === null) {
+        valueEl.textContent = 'unavailable';
+        valueEl.style.color = 'var(--rs-text-muted)';
+      } else {
+        const quality = RoSuite.Ping.getQuality(latency);
+        valueEl.textContent = `${latency}ms (${quality.label})`;
+        valueEl.style.color = quality.color;
       }
     }
   }

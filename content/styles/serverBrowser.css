@@ -183,3 +183,59 @@
   background: var(--rs-bg-primary);
   border-radius: 4px;
 }
+
+/* Ping / Latency */
+.rs-sb-latency {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--rs-border);
+  font-size: 11px;
+  color: var(--rs-text-muted);
+  background: var(--rs-bg-primary);
+}
+
+.rs-latency-label {
+  color: var(--rs-text-muted);
+}
+
+.rs-latency-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rs-ping-all-btn {
+  margin-left: auto;
+}
+
+.rs-ping-disclaimer {
+  font-size: 9px;
+  color: var(--rs-text-muted);
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+/* Per-server ping indicator */
+.rs-server-ping {
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--rs-text-muted);
+}
+
+.rs-ping-btn {
+  font-size: 10px;
+  padding: 2px 6px;
+  min-width: 34px;
+  color: var(--rs-text-muted);
+  border-color: transparent;
+  background: transparent;
+}
+
+.rs-ping-btn:hover {
+  border-color: var(--rs-border);
+  background: var(--rs-bg-primary);
+}
