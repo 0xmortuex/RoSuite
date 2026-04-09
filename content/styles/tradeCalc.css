@@ -1,34 +1,36 @@
-/* RoSuite Trade Calculator Styles */
+/* RoSuite Trade Calculator — Minimal inline style */
 
 .rs-trade-summary {
-  padding: 16px;
+  padding: 10px 12px;
 }
 
 .rs-trade-list {
-  padding: 8px 16px 16px;
+  padding: 4px 12px 12px;
 }
 
 .rs-trade-section {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .rs-trade-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--rs-text-secondary);
-  margin: 0 0 8px 0;
-  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0 0 6px 0;
+  padding-bottom: 4px;
   border-bottom: 1px solid var(--rs-border);
 }
 
-/* Trade card */
+/* Trade card — clean row */
 .rs-trade-card {
-  background: var(--rs-surface);
+  background: var(--rs-bg-primary);
   border: 1px solid var(--rs-border);
-  border-radius: var(--rs-radius);
-  padding: 12px;
-  margin-bottom: 8px;
-  transition: border-color var(--rs-transition);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 6px;
+  transition: border-color 0.15s ease;
 }
 
 .rs-trade-card:hover {
@@ -38,18 +40,18 @@
 .rs-trade-top-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rs-trade-partner {
   flex: 1;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .rs-trade-partner a {
   color: var(--rs-accent);
   text-decoration: none;
+  font-weight: 600;
 }
 
 .rs-trade-partner a:hover {
@@ -57,40 +59,40 @@
 }
 
 .rs-trade-status {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
 }
 
 .rs-trade-status-open,
 .rs-trade-status-pending {
-  background: rgba(245, 166, 35, 0.2);
+  background: rgba(243, 156, 18, 0.12);
   color: var(--rs-warning);
 }
 
 .rs-trade-status-completed {
-  background: rgba(0, 176, 111, 0.2);
+  background: rgba(0, 176, 111, 0.12);
   color: var(--rs-success);
 }
 
 .rs-trade-status-declined {
-  background: rgba(231, 76, 60, 0.2);
+  background: rgba(231, 76, 60, 0.12);
   color: var(--rs-danger);
 }
 
 .rs-trade-date {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--rs-text-muted);
 }
 
-/* Trade breakdown */
+/* Trade breakdown — clean summary row */
 .rs-trade-breakdown {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--rs-border);
 }
 
@@ -100,67 +102,69 @@
 }
 
 .rs-offer-label {
-  font-size: 11px;
-  color: var(--rs-text-secondary);
-  margin-bottom: 4px;
+  font-size: 10px;
+  color: var(--rs-text-muted);
+  margin-bottom: 2px;
 }
 
 .rs-offer-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--rs-text);
+  color: var(--rs-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .rs-offer-detail {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--rs-text-muted);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
-/* Fairness indicator */
+/* Fairness indicator — thin colored bar with percentage */
 .rs-fairness {
   text-align: center;
-  padding: 8px 12px;
-  border-radius: var(--rs-radius);
-  min-width: 90px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  min-width: 70px;
 }
 
 .rs-fairness-label {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .rs-fairness-percent {
-  font-size: 10px;
-  margin-top: 2px;
+  font-size: 9px;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
 }
 
 .rs-fairness-fair {
-  background: rgba(0, 176, 111, 0.15);
+  background: rgba(0, 176, 111, 0.1);
   color: var(--rs-success);
 }
 
 .rs-fairness-slight {
-  background: rgba(245, 166, 35, 0.15);
+  background: rgba(243, 156, 18, 0.1);
   color: var(--rs-warning);
 }
 
 .rs-fairness-big {
-  background: rgba(231, 76, 60, 0.15);
+  background: rgba(231, 76, 60, 0.1);
   color: var(--rs-danger);
 }
 
 .rs-fairness-unknown {
-  background: var(--rs-bg);
+  background: var(--rs-bg-tertiary);
   color: var(--rs-text-muted);
 }
 
-/* Trade details */
+/* Trade details — compact */
 .rs-trade-details {
   display: flex;
-  gap: 16px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--rs-border);
 }
 
@@ -169,28 +173,35 @@
 }
 
 .rs-trade-items-side h4 {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--rs-text-secondary);
-  margin: 0 0 8px 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rs-text-muted);
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
 }
 
 .rs-trade-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 8px;
-  font-size: 12px;
-  background: var(--rs-bg);
-  border-radius: 4px;
-  margin-bottom: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  background: var(--rs-bg-secondary);
+  border-radius: 3px;
+  margin-bottom: 2px;
 }
 
 .rs-trade-item-name {
-  color: var(--rs-text);
+  color: var(--rs-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rs-trade-item-rap {
-  color: var(--rs-text-secondary);
-  font-size: 11px;
+  color: var(--rs-text-muted);
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
 }

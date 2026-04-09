@@ -1,109 +1,111 @@
-/* RoSuite Game Stats Styles */
+/* RoSuite Game Stats — Compact single row of cards */
 
+/* Stats row — compact horizontal */
 .rs-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 16px;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
 }
 
 .rs-stat-card {
-  background: var(--rs-surface);
+  flex: 1;
+  background: var(--rs-bg-primary);
   border: 1px solid var(--rs-border);
-  border-radius: var(--rs-radius);
-  padding: 14px;
+  border-radius: 8px;
+  padding: 8px 10px;
   text-align: center;
-  transition: border-color var(--rs-transition);
+  transition: border-color 0.15s ease;
+  min-width: 0;
 }
 
 .rs-stat-card:hover {
   border-color: var(--rs-accent);
 }
 
+.rs-stat-card .rs-stat-value {
+  font-size: 16px;
+}
+
+.rs-stat-card .rs-stat-label {
+  font-size: 9px;
+}
+
 .rs-stat-players .rs-stat-value {
   color: var(--rs-accent);
-  font-size: 24px;
 }
 
 .rs-stat-peak .rs-stat-value {
   color: var(--rs-warning);
 }
 
-/* Rating bar */
+/* Rating bar — compact */
 .rs-rating-container {
-  padding: 0 16px 16px;
+  padding: 6px 12px 10px;
 }
 
 .rs-rating-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: baseline;
+  margin-bottom: 4px;
 }
 
 .rs-rating-approval {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--rs-text);
+  color: var(--rs-text-primary);
 }
 
 .rs-rating-total {
-  font-size: 12px;
-  color: var(--rs-text-secondary);
+  font-size: 10px;
+  color: var(--rs-text-muted);
 }
 
 .rs-rating-bar {
   display: flex;
-  height: 12px;
-  border-radius: 6px;
+  height: 6px;
+  border-radius: 3px;
   overflow: hidden;
-  background: var(--rs-bg);
+  background: var(--rs-bg-primary);
 }
 
 .rs-rating-bar-likes {
   background: var(--rs-success);
-  transition: width 0.3s ease;
 }
 
 .rs-rating-bar-dislikes {
   background: var(--rs-danger);
-  transition: width 0.3s ease;
 }
 
 .rs-rating-counts {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--rs-text-secondary);
+  margin-top: 3px;
+  font-size: 10px;
 }
 
-.rs-rating-likes {
-  color: var(--rs-success);
-}
+.rs-rating-likes { color: var(--rs-success); }
+.rs-rating-dislikes { color: var(--rs-danger); }
 
-.rs-rating-dislikes {
-  color: var(--rs-danger);
-}
-
-/* Server distribution chart */
+/* Server distribution chart — small, max 120px tall */
 .rs-chart-container {
-  padding: 0 16px 16px;
+  padding: 4px 12px 10px;
 }
 
 .rs-chart-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--rs-text-secondary);
-  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
 }
 
 .rs-chart {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
-  height: 100px;
-  padding: 0 8px;
+  gap: 6px;
+  height: 80px;
 }
 
 .rs-chart-bar-container {
@@ -116,54 +118,57 @@
 }
 
 .rs-chart-count {
-  font-size: 10px;
-  color: var(--rs-text-secondary);
-  margin-bottom: 4px;
+  font-size: 9px;
+  color: var(--rs-text-muted);
+  margin-bottom: 2px;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Thin bars */
 .rs-chart-bar {
   width: 100%;
-  max-width: 60px;
+  max-width: 40px;
   background: var(--rs-accent);
-  border-radius: 4px 4px 0 0;
-  transition: height 0.3s ease;
-  min-height: 4px;
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  opacity: 0.8;
 }
 
 .rs-chart-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--rs-text-muted);
-  margin-top: 6px;
-  text-align: center;
+  margin-top: 3px;
 }
 
-/* Info cards */
+/* Info cards — compact grid */
 .rs-info-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
-  padding: 0 16px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 12px 10px;
 }
 
 .rs-info-card {
-  background: var(--rs-surface);
+  background: var(--rs-bg-primary);
   border: 1px solid var(--rs-border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 6px 10px;
+  flex: 1 1 auto;
+  min-width: 100px;
 }
 
 .rs-info-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--rs-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+  margin-bottom: 2px;
 }
 
 .rs-info-value {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--rs-text);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rs-text-primary);
 }
 
 .rs-info-link {
@@ -175,9 +180,12 @@
   text-decoration: underline;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive — stack on small screens */
+@media (max-width: 600px) {
   .rs-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
+  }
+  .rs-stat-card {
+    flex: 1 1 calc(50% - 4px);
   }
 }

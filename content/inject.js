@@ -12,6 +12,28 @@
   let activeModules = [];
   let settings = {};
 
+  /**
+   * Detect Roblox's current theme and apply matching RoSuite theme.
+   * Roblox uses a 'dark-theme' class on body or a light background color.
+   */
+  function detectAndApplyTheme() {
+    const body = document.body;
+    const isDark = body.classList.contains('dark-theme') ||
+      body.getAttribute('data-theme') === 'dark' ||
+      getComputedStyle(body).backgroundColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/) &&
+      (() => {
+        const m = getComputedStyle(body).backgroundColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        return m && (parseInt(m[1]) + parseInt(m[2]) + parseInt(m[3])) / 3 < 128;
+      })();
+
+    const themeSetting = settings.theme || 'auto';
+    if (themeSetting === 'light' || (themeSetting === 'auto' && !isDark)) {
+      document.documentElement.setAttribute('data-rs-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-rs-theme');
+    }
+  }
+
   async function loadSettings() {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (result) => {
@@ -71,6 +93,7 @@
     currentPageType = pageType;
 
     await loadSettings();
+    detectAndApplyTheme();
 
     RoSuite.DOM.log('Page type:', pageType, 'Settings:', settings);
 

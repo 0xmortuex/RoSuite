@@ -1,4 +1,4 @@
-/* RoSuite Options Page Styles */
+/* RoSuite Options Page — Clean Chrome settings aesthetic */
 
 * {
   margin: 0;
@@ -7,101 +7,105 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: #1a1c1e;
+  color: #f5f5f5;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 .rs-options {
-  max-width: 640px;
+  max-width: 580px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
 /* Header */
 .rs-options-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #4a4a4a;
+  gap: 10px;
+  margin-bottom: 28px;
 }
 
 .rs-options-logo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: #00b06f;
   color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .rs-options-header h1 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 /* Sections */
 .rs-options-section {
-  background: #2c2c2c;
-  border: 1px solid #4a4a4a;
+  background: #232527;
+  border: 1px solid #3a3c3e;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
 .rs-options-section h2 {
-  font-size: 13px;
-  font-weight: 600;
-  color: #a0a0a0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #898989;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 14px 16px;
-  background: #393939;
-  border-bottom: 1px solid #4a4a4a;
+  letter-spacing: 0.6px;
+  padding: 10px 16px;
+  background: #2c2e30;
+  border-bottom: 1px solid #3a3c3e;
 }
 
-/* Option rows */
+/* Option rows — lots of whitespace */
 .rs-option-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #3a3a3a;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease;
 }
 
 .rs-option-row:last-child {
   border-bottom: none;
 }
 
+.rs-option-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .rs-option-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .rs-option-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .rs-option-desc {
   font-size: 11px;
-  color: #777;
+  color: #898989;
 }
 
-/* Switch */
+/* iOS-style switch — consistent with popup */
 .rs-switch {
   position: relative;
   display: inline-block;
-  width: 40px;
-  height: 22px;
+  width: 32px;
+  height: 18px;
   flex-shrink: 0;
 }
 
@@ -119,20 +123,21 @@ body {
   right: 0;
   bottom: 0;
   background: #555;
-  border-radius: 11px;
-  transition: 0.2s;
+  border-radius: 9px;
+  transition: background 0.15s ease;
 }
 
 .rs-switch-slider::before {
   content: '';
   position: absolute;
-  height: 18px;
-  width: 18px;
+  height: 14px;
+  width: 14px;
   left: 2px;
   bottom: 2px;
   background: #fff;
   border-radius: 50%;
-  transition: 0.2s;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .rs-switch input:checked + .rs-switch-slider {
@@ -140,19 +145,21 @@ body {
 }
 
 .rs-switch input:checked + .rs-switch-slider::before {
-  transform: translateX(18px);
+  transform: translateX(14px);
 }
 
 /* Select */
 .rs-option-select {
-  padding: 6px 10px;
-  font-size: 13px;
-  color: #e0e0e0;
-  background: #393939;
-  border: 1px solid #4a4a4a;
-  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #f5f5f5;
+  background: #2c2e30;
+  border: 1px solid #3a3c3e;
+  border-radius: 4px;
   cursor: pointer;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .rs-option-select:focus {
@@ -161,24 +168,31 @@ body {
 
 /* About */
 .rs-about {
-  padding: 16px;
-  font-size: 13px;
-  line-height: 1.8;
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #bdbdbd;
+}
+
+.rs-about p + p {
+  margin-top: 2px;
 }
 
 .rs-about-links {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   margin-top: 8px;
 }
 
 .rs-about-links a {
   color: #00b06f;
   text-decoration: none;
+  font-size: 12px;
+  transition: opacity 0.15s ease;
 }
 
 .rs-about-links a:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 /* Footer */
@@ -187,24 +201,29 @@ body {
   align-items: center;
   justify-content: space-between;
   padding-top: 16px;
+  margin-top: 8px;
 }
 
 .rs-options-btn-danger {
-  padding: 8px 16px;
-  font-size: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 600;
   color: #e74c3c;
-  background: rgba(231, 76, 60, 0.1);
-  border: 1px solid #e74c3c;
-  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.15s ease;
 }
 
 .rs-options-btn-danger:hover {
-  background: rgba(231, 76, 60, 0.2);
+  background: rgba(231, 76, 60, 0.1);
+  border-color: #e74c3c;
 }
 
 .rs-save-status {
-  font-size: 12px;
+  font-size: 11px;
   color: #00b06f;
+  font-weight: 500;
 }

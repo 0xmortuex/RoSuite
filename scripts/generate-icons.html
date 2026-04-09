@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RoSuite Icon Generator</title>
+  <style>
+    body { font-family: system-ui; background: #1a1a2e; color: #e0e0e0; padding: 40px; text-align: center; }
+    .preview { display: flex; gap: 24px; justify-content: center; align-items: end; margin: 32px 0; }
+    .preview div { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .preview canvas { border: 1px solid #333; border-radius: 4px; }
+    .preview span { font-size: 12px; color: #888; }
+    button { padding: 10px 24px; background: #00b06f; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 8px; }
+    button:hover { background: #00c980; }
+    .downloads { margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>RoSuite Icon Generator</h1>
+  <p>Renders the hexagon icon at all required sizes. Click each button to download.</p>
+  <div class="preview" id="preview"></div>
+  <div class="downloads" id="downloads"></div>
+
+  <script>
+    const sizes = [16, 32, 48, 128];
+
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+      const s = size / 128; // scale factor
+
+      // Clear
+      ctx.clearRect(0, 0, size, size);
+
+      // Hexagon path helper
+      function hexPath(cx, cy, rx, ry) {
+        ctx.beginPath();
+        const points = [
+          [cx, cy - ry],
+          [cx + rx, cy - ry * 0.47],
+          [cx + rx, cy + ry * 0.47],
+          [cx, cy + ry],
+          [cx - rx, cy + ry * 0.47],
+          [cx - rx, cy - ry * 0.47],
+        ];
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+        ctx.closePath();
+      }
+
+      const cx = size / 2, cy = size / 2;
+
+      // Outer glow
+      if (size >= 32) {
+        ctx.save();
+        ctx.shadowColor = '#00b06f';
+        ctx.shadowBlur = 6 * s;
+        hexPath(cx, cy, 54 * s, 58 * s);
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Main hexagon fill
+      hexPath(cx, cy, 54 * s, 58 * s);
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fill();
+
+      // Green border
+      hexPath(cx, cy, 54 * s, 58 * s);
+      ctx.strokeStyle = '#00b06f';
+      ctx.lineWidth = Math.max(1, 2.5 * s);
+      ctx.globalAlpha = 0.7;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Inner hexagon border (subtle)
+      if (size >= 32) {
+        hexPath(cx, cy, 48 * s, 50 * s);
+        ctx.strokeStyle = '#00b06f';
+        ctx.lineWidth = Math.max(0.5, 1 * s);
+        ctx.globalAlpha = 0.15;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // "RS" text
+      ctx.fillStyle = '#00b06f';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const fontSize = Math.max(8, Math.round(42 * s));
+      ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.fillText('RS', cx, cy + (size >= 48 ? 1 * s : 0));
+    }
+
+    const previewEl = document.getElementById('preview');
+    const downloadsEl = document.getElementById('downloads');
+
+    sizes.forEach(size => {
+      const wrap = document.createElement('div');
+      const canvas = document.createElement('canvas');
+      drawIcon(canvas, size);
+
+      const label = document.createElement('span');
+      label.textContent = `${size}x${size}`;
+
+      // Display at 2x for small sizes
+      const displaySize = Math.max(size, 64);
+      canvas.style.width = displaySize + 'px';
+      canvas.style.height = displaySize + 'px';
+      canvas.style.imageRendering = size < 48 ? 'pixelated' : 'auto';
+
+      wrap.appendChild(canvas);
+      wrap.appendChild(label);
+      previewEl.appendChild(wrap);
+
+      const btn = document.createElement('button');
+      btn.textContent = `Download icon${size}.png`;
+      btn.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `icon${size}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+      downloadsEl.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

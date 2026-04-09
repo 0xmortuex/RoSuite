@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d486" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#00b06f" stop-opacity="0.3"/>
+    </linearGradient>
+    <filter id="greenGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#00b06f" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Hexagon background -->
+  <polygon points="64,6 118,33 118,95 64,122 10,95 10,33" fill="#1a1a2e" stroke="url(#glow)" stroke-width="3" filter="url(#greenGlow)"/>
+  <!-- Inner hexagon border -->
+  <polygon points="64,14 112,38 112,90 64,114 16,90 16,38" fill="none" stroke="#00b06f" stroke-width="1.5" opacity="0.25"/>
+  <!-- RS text -->
+  <text x="64" y="72" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="42" font-weight="800" fill="#00b06f" letter-spacing="-1">RS</text>
+</svg>
