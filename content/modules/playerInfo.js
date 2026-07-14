@@ -85,17 +85,21 @@
       });
 
       if (isFriend) {
-        badges.appendChild(
-          RoSuite.DOM.createElement('span', {
-            classes: ['rs-badge', 'rs-badge-friend'],
-            text: 'Friend',
-          })
-        );
+        const friendBadge = RoSuite.DOM.createElement('span', {
+          classes: ['rs-badge', 'rs-badge-friend'],
+          text: 'Friend',
+        });
+        badges.appendChild(friendBadge);
+        // Subtle, finite glow to draw the eye to friends in the list —
+        // gated behind prefers-reduced-motion inside RoSuite.Motion.
+        RoSuite.Motion.pulse(friendBadge);
       }
 
       row.appendChild(avatar);
       row.appendChild(nameContainer);
       row.appendChild(badges);
+
+      RoSuite.Motion.animateIn(row);
 
       // Add hover tooltip with more info
       row.addEventListener('mouseenter', () => this._showTooltip(row, userId));
@@ -145,10 +149,6 @@
       const userInfo = this.cache.get(String(userId));
       if (!userInfo) return;
 
-      const tooltip = RoSuite.DOM.createElement('div', {
-        classes: ['rs-player-tooltip'],
-      });
-
       const lines = [];
       if (userInfo.created) {
         lines.push(`Joined: ${new Date(userInfo.created).toLocaleDateString()}`);
@@ -158,10 +158,22 @@
         lines.push('Status: Banned');
       }
 
-      tooltip.innerHTML = lines.map(l => `<div class="rs-tooltip-line">${l}</div>`).join('');
+      // Built with textContent (not innerHTML) — tooltip lines are safe today,
+      // but keeping this DOM-node based avoids ever reopening an innerHTML
+      // sink here if a Roblox-controlled field gets added to `lines` later.
+      const tooltip = RoSuite.DOM.createElement('div', {
+        classes: ['rs-player-tooltip'],
+        children: lines.map(line =>
+          RoSuite.DOM.createElement('div', {
+            classes: ['rs-tooltip-line'],
+            text: line,
+          })
+        ),
+      });
 
       row.style.position = 'relative';
       row.appendChild(tooltip);
+      RoSuite.Motion.animateIn(tooltip, { delay: 0 });
     }
 
     _hideTooltip(row) {

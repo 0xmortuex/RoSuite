@@ -45,7 +45,7 @@ RoSuite.API_Client = {
       const cached = await RoSuite.Cache.get(cacheKey);
       if (cached !== null) {
         this._stats.cacheHits++;
-        this._updateStats();
+        this._updateStats(true);
         return cached;
       }
     }
@@ -138,19 +138,39 @@ RoSuite.API_Client = {
     return new Promise(resolve => setTimeout(resolve, ms));
   },
 
-  _updateStats() {
+  /**
+   * Persist call/cache-hit counters to chrome.storage.local (read by the
+   * popup). Pass `isCacheHit: true` when this update follows a cache hit
+   * so it increments `totalCacheHits` instead of `totalCalls` — previously
+   * this stat was initialized but never incremented (dead counter).
+   */
+  _updateStats(isCacheHit = false) {
     try {
       chrome.storage.local.get('rs_stats', (result) => {
+        if (chrome.runtime.lastError) {
+          console.debug('[RoSuite] _updateStats: storage.get failed:', chrome.runtime.lastError.message);
+          return;
+        }
         const stats = result.rs_stats || { totalCalls: 0, totalCacheHits: 0, date: new Date().toDateString() };
         if (stats.date !== new Date().toDateString()) {
           stats.totalCalls = 0;
           stats.totalCacheHits = 0;
           stats.date = new Date().toDateString();
         }
-        stats.totalCalls += 1;
-        chrome.storage.local.set({ rs_stats: stats });
+        if (isCacheHit) {
+          stats.totalCacheHits += 1;
+        } else {
+          stats.totalCalls += 1;
+        }
+        chrome.storage.local.set({ rs_stats: stats }, () => {
+          if (chrome.runtime.lastError) {
+            console.debug('[RoSuite] _updateStats: storage.set failed:', chrome.runtime.lastError.message);
+          }
+        });
       });
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      console.debug('[RoSuite] _updateStats threw:', e);
+    }
   },
 
   // Convenience methods

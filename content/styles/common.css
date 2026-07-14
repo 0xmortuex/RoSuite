@@ -286,3 +286,83 @@
   height: 1px;
   background: var(--rs-border);
 }
+
+/* ==========================================================================
+   RoSuite Motion Layer
+   - Scoped entirely to rs- prefixed classes; never animates Roblox's own
+     elements.
+   - transform/opacity only, driven by utils/motion.js (rAF, never
+     setInterval).
+   - Every effect here is neutralized under prefers-reduced-motion below.
+   ========================================================================== */
+
+/* Panel/badge entrance — fade + slide, staggered via inline transition-delay */
+.rs-anim-enter {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.rs-anim-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* Friend-highlight glow pulse — finite (see .rs-anim-pulse iteration count) */
+@keyframes rs-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 176, 111, 0); }
+  50% { box-shadow: 0 0 6px 2px rgba(0, 176, 111, 0.45); }
+}
+
+.rs-anim-pulse {
+  animation: rs-glow-pulse 0.9s ease-out 2;
+}
+
+/* Skeleton shimmer — tied to real fetch lifecycle via RoSuite.Motion.setSkeleton() */
+@keyframes rs-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.rs-skeleton {
+  position: relative;
+  color: transparent !important;
+  border-color: transparent !important;
+  pointer-events: none;
+  border-radius: 4px;
+  background-image: linear-gradient(
+    90deg,
+    var(--rs-bg-tertiary) 25%,
+    var(--rs-hover) 50%,
+    var(--rs-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: rs-shimmer 1.4s ease-in-out infinite;
+}
+
+.rs-skeleton * {
+  visibility: hidden;
+}
+
+/* Button press feedback — subtle tactile scale on top of the existing hover transition */
+.rs-btn:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-anim-enter,
+  .rs-anim-enter-active {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .rs-anim-pulse,
+  .rs-skeleton {
+    animation: none !important;
+  }
+
+  .rs-btn:active {
+    transform: none !important;
+  }
+}

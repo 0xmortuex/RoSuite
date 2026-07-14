@@ -90,6 +90,7 @@
       if (anchor.parentNode) {
         anchor.parentNode.insertBefore(this.container, anchor.nextSibling);
       }
+      RoSuite.Motion.animateIn(this.container);
     }
 
     async _loadAllStats() {
@@ -146,6 +147,7 @@
             })
           );
         });
+        RoSuite.Motion.staggerIn(this.statsGrid.querySelectorAll('.rs-stat-card'));
 
         // Update server distribution chart
         this._renderDistributionChart(data.data);
@@ -255,6 +257,7 @@
 
           this.infoCards.appendChild(card);
         });
+        RoSuite.Motion.staggerIn(this.infoCards.querySelectorAll('.rs-info-card'));
       } catch (e) {
         RoSuite.DOM.logError('GameStats: Failed to load game details:', e);
       }

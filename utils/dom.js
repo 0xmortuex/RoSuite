@@ -212,4 +212,37 @@ RoSuite.DOM = {
     if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
     return parts.length ? parts.join(', ') : 'Less than a month';
   },
+
+  /**
+   * Escape a value for safe interpolation into innerHTML.
+   * Roblox-controlled strings (display names, usernames, group/game names,
+   * descriptions, presence location text, etc.) must always be routed
+   * through this before being placed in markup — never trust them raw.
+   */
+  escapeHTML(value) {
+    if (value == null) return '';
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
+  /**
+   * Tagged template literal — HTML-escapes every interpolated value while
+   * leaving the static markup around it untouched. Prefer building
+   * elements with createElement()/textContent; use this only when a
+   * small innerHTML template is unavoidable and may contain
+   * attacker-influenceable (Roblox) data.
+   *
+   * Usage: el.innerHTML = RoSuite.DOM.html`<span>${untrustedName}</span>`;
+   */
+  html(strings, ...values) {
+    let out = strings[0];
+    values.forEach((val, i) => {
+      out += RoSuite.DOM.escapeHTML(val) + strings[i + 1];
+    });
+    return out;
+  },
 };

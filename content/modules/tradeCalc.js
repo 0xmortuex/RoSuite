@@ -66,13 +66,26 @@
       if (anchor.parentNode) {
         anchor.parentNode.insertBefore(this.container, anchor);
       }
+      RoSuite.Motion.animateIn(this.container);
 
       // Load recent trades
       await this._loadTrades();
     }
 
+    _showLoadingSkeleton() {
+      this.tradeList.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        this.tradeList.appendChild(
+          RoSuite.DOM.createElement('div', {
+            classes: ['rs-trade-card', 'rs-skeleton'],
+            style: { height: '56px', marginBottom: '8px' },
+          })
+        );
+      }
+    }
+
     async _loadTrades() {
-      this.tradeList.innerHTML = '<div class="rs-loading-text">Loading trades...</div>';
+      this._showLoadingSkeleton();
 
       try {
         // Try loading inbound trades
@@ -115,6 +128,8 @@
 
         if (!hasAny) {
           this.tradeList.innerHTML = '<div class="rs-loading-text">No active trades found</div>';
+        } else {
+          RoSuite.Motion.staggerIn(this.tradeList.querySelectorAll('.rs-trade-card'));
         }
       } catch (e) {
         RoSuite.DOM.logError('TradeCalc: Failed to load trades:', e);
@@ -212,14 +227,32 @@
       const itemCount = offer && offer.userAssets ? offer.userAssets.length : 0;
       const robux = offer ? (offer.robux || 0) : 0;
 
-      return RoSuite.DOM.createElement('div', {
-        classes: ['rs-offer-summary'],
-        html: `
-          <div class="rs-offer-label">${label}</div>
-          <div class="rs-offer-value">R$ ${RoSuite.DOM.formatNumber(totalRAP)}</div>
-          <div class="rs-offer-detail">${itemCount} items${robux > 0 ? ` + R$ ${RoSuite.DOM.formatNumber(robux)}` : ''}</div>
-        `,
+      const valueEl = RoSuite.DOM.createElement('div', {
+        classes: ['rs-offer-value'],
+        text: 'R$ 0',
       });
+
+      const summary = RoSuite.DOM.createElement('div', {
+        classes: ['rs-offer-summary'],
+        children: [
+          RoSuite.DOM.createElement('div', {
+            classes: ['rs-offer-label'],
+            text: label,
+          }),
+          valueEl,
+          RoSuite.DOM.createElement('div', {
+            classes: ['rs-offer-detail'],
+            text: `${itemCount} items${robux > 0 ? ` + R$ ${RoSuite.DOM.formatNumber(robux)}` : ''}`,
+          }),
+        ],
+      });
+
+      RoSuite.Motion.countUp(valueEl, totalRAP, {
+        prefix: 'R$ ',
+        format: (n) => RoSuite.DOM.formatNumber(Math.round(n)),
+      });
+
+      return summary;
     }
 
     _createFairnessIndicator(myRAP, theirRAP) {
@@ -283,12 +316,20 @@
 
           if (offer.userAssets && offer.userAssets.length > 0) {
             offer.userAssets.forEach(item => {
+              // item.name is a Roblox catalog item name — attacker-influenceable,
+              // so build this with textContent rather than innerHTML.
               const itemEl = RoSuite.DOM.createElement('div', {
                 classes: ['rs-trade-item'],
-                html: `
-                  <span class="rs-trade-item-name">${item.name || 'Unknown Item'}</span>
-                  <span class="rs-trade-item-rap">RAP: R$ ${RoSuite.DOM.formatNumber(item.recentAveragePrice || 0)}</span>
-                `,
+                children: [
+                  RoSuite.DOM.createElement('span', {
+                    classes: ['rs-trade-item-name'],
+                    text: item.name || 'Unknown Item',
+                  }),
+                  RoSuite.DOM.createElement('span', {
+                    classes: ['rs-trade-item-rap'],
+                    text: `RAP: R$ ${RoSuite.DOM.formatNumber(item.recentAveragePrice || 0)}`,
+                  }),
+                ],
               });
               sideEl.appendChild(itemEl);
             });

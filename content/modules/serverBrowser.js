@@ -185,6 +185,7 @@
       } else {
         document.body.appendChild(this.container);
       }
+      RoSuite.Motion.animateIn(this.container);
     }
 
     _createSortDropdown() {
@@ -452,6 +453,7 @@
         this.serverList.appendChild(card);
       });
 
+      RoSuite.Motion.staggerIn(this.serverList.querySelectorAll('.rs-server-card'));
       this._updateServerCount();
     }
 

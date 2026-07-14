@@ -32,6 +32,7 @@
         "utils/cache.js",
         "utils/api.js",
         "utils/ping.js",
+        "utils/motion.js",
         "content/modules/playerInfo.js",
         "content/modules/serverBrowser.js",
         "content/modules/profileEnhance.js",

@@ -10,6 +10,7 @@
       this.userId = null;
       this.loggedInUserId = null;
       this.container = null;
+      this._cardStagger = 0;
     }
 
     async init() {
@@ -68,6 +69,7 @@
       if (anchor.parentNode) {
         anchor.parentNode.insertBefore(this.container, anchor.nextSibling);
       }
+      RoSuite.Motion.animateIn(this.container);
     }
 
     async _loadData() {
@@ -92,15 +94,17 @@
 
         // Account Age Card
         const ageCard = this._createCard('Account Age', []);
+        const ageBody = ageCard.querySelector('.rs-card-body');
+        RoSuite.Motion.setSkeleton(ageBody, false);
         if (user.created) {
           const created = new Date(user.created);
           const ageStr = RoSuite.DOM.accountAge(user.created);
-          ageCard.querySelector('.rs-card-body').innerHTML = `
+          ageBody.innerHTML = `
             <div class="rs-stat-value">${ageStr}</div>
             <div class="rs-stat-label">Created ${created.toLocaleDateString()}</div>
           `;
         } else {
-          ageCard.querySelector('.rs-card-body').textContent = 'Unknown';
+          ageBody.textContent = 'Unknown';
         }
         this.contentGrid.appendChild(ageCard);
       } catch (e) {
@@ -122,7 +126,9 @@
           const data = await RoSuite.API_Client.getUserCollectibles(this.userId, cursor);
 
           if (!data || !data.data) {
-            card.querySelector('.rs-card-body').innerHTML = `
+            const body = card.querySelector('.rs-card-body');
+            RoSuite.Motion.setSkeleton(body, false);
+            body.innerHTML = `
               <div class="rs-stat-value rs-text-muted">Inventory Private</div>
               <div class="rs-stat-label">This user's inventory is private</div>
             `;
@@ -138,12 +144,19 @@
           hasMore = !!data.nextPageCursor;
         }
 
-        card.querySelector('.rs-card-body').innerHTML = `
-          <div class="rs-stat-value rs-text-green">R$ ${RoSuite.DOM.formatNumber(totalRAP)}</div>
+        const body = card.querySelector('.rs-card-body');
+        RoSuite.Motion.setSkeleton(body, false);
+        body.innerHTML = `
+          <div class="rs-stat-value rs-text-green" data-rs-rap-value></div>
           <div class="rs-stat-label">${RoSuite.DOM.formatNumber(itemCount)} limited items</div>
         `;
+        RoSuite.Motion.countUp(body.querySelector('[data-rs-rap-value]'), totalRAP, {
+          prefix: 'R$ ',
+          format: (n) => RoSuite.DOM.formatNumber(Math.round(n)),
+        });
       } catch (e) {
         const body = card.querySelector('.rs-card-body');
+        RoSuite.Motion.setSkeleton(body, false);
         if (e.message && e.message.includes('403')) {
           body.innerHTML = `
             <div class="rs-stat-value rs-text-muted">Inventory Private</div>
@@ -197,25 +210,62 @@
               break;
           }
 
-          let html = `<div class="rs-stat-value"><span class="rs-status-dot ${statusClass}"></span> ${statusText}</div>`;
+          // extraInfo can embed presence.lastLocation — a Roblox game/place
+          // name that's attacker-influenceable — so this whole block is
+          // built with createElement/textContent rather than innerHTML.
+          const body = card.querySelector('.rs-card-body');
+          RoSuite.Motion.setSkeleton(body, false);
+          body.innerHTML = '';
+
+          const children = [
+            RoSuite.DOM.createElement('div', {
+              classes: ['rs-stat-value'],
+              children: [
+                RoSuite.DOM.createElement('span', { classes: ['rs-status-dot', statusClass] }),
+                document.createTextNode(` ${statusText}`),
+              ],
+            }),
+          ];
+
           if (extraInfo) {
-            html += `<div class="rs-stat-label">${extraInfo}</div>`;
+            children.push(
+              RoSuite.DOM.createElement('div', {
+                classes: ['rs-stat-label'],
+                text: extraInfo,
+              })
+            );
           }
 
           if (presence.placeId && presence.userPresenceType === 2) {
-            html += `<div class="rs-activity-actions">
-              <a href="https://www.roblox.com/games/${presence.placeId}" target="_blank" class="rs-btn rs-btn-sm">View Game</a>
-            </div>`;
+            children.push(
+              RoSuite.DOM.createElement('div', {
+                classes: ['rs-activity-actions'],
+                children: [
+                  RoSuite.DOM.createElement('a', {
+                    classes: ['rs-btn', 'rs-btn-sm'],
+                    attrs: {
+                      href: `https://www.roblox.com/games/${presence.placeId}`,
+                      target: '_blank',
+                    },
+                    text: 'View Game',
+                  }),
+                ],
+              })
+            );
           }
 
-          card.querySelector('.rs-card-body').innerHTML = html;
+          children.forEach(child => body.appendChild(child));
         } else {
-          card.querySelector('.rs-card-body').innerHTML = `
+          const body = card.querySelector('.rs-card-body');
+          RoSuite.Motion.setSkeleton(body, false);
+          body.innerHTML = `
             <div class="rs-stat-value"><span class="rs-status-dot rs-status-offline"></span> Unknown</div>
           `;
         }
       } catch (e) {
-        card.querySelector('.rs-card-body').innerHTML = `
+        const body = card.querySelector('.rs-card-body');
+        RoSuite.Motion.setSkeleton(body, false);
+        body.innerHTML = `
           <div class="rs-stat-value rs-text-muted">Unavailable</div>
         `;
       }
@@ -300,6 +350,15 @@
     }
 
     _createCard(title, contentLines) {
+      const isLoading = contentLines.length === 0;
+      const body = RoSuite.DOM.createElement('div', {
+        classes: ['rs-card-body'],
+        html: contentLines.join('') || '<div class="rs-loading-text">Loading...</div>',
+      });
+      if (isLoading) {
+        RoSuite.Motion.setSkeleton(body, true);
+      }
+
       const card = RoSuite.DOM.createElement('div', {
         classes: ['rs-profile-card'],
         children: [
@@ -307,12 +366,16 @@
             classes: ['rs-card-title'],
             text: title,
           }),
-          RoSuite.DOM.createElement('div', {
-            classes: ['rs-card-body'],
-            html: contentLines.join('') || '<div class="rs-loading-text">Loading...</div>',
-          }),
+          body,
         ],
       });
+
+      // Cards are created at slightly different times as each async load
+      // kicks off; stagger their entrance based on creation order so they
+      // don't all pop in simultaneously.
+      RoSuite.Motion.animateIn(card, { delay: this._cardStagger });
+      this._cardStagger += 60;
+
       return card;
     }
 
