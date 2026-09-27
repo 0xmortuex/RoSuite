@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RoSuite",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Free, open-source Roblox enhancement suite — server browser, player info, profile upgrades, trade calculator, and game stats.",
   "permissions": [
     "storage",
@@ -40,7 +40,14 @@
         "content/modules/gameStats.js",
         "content/inject.js"
       ],
-      "css": ["content/styles/common.css"],
+      "css": [
+        "content/styles/common.css",
+        "content/styles/gameStats.css",
+        "content/styles/serverBrowser.css",
+        "content/styles/playerInfo.css",
+        "content/styles/profileEnhance.css",
+        "content/styles/tradeCalc.css"
+      ],
       "run_at": "document_idle"
     }
   ],

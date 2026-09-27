@@ -56,15 +56,12 @@
     });
   }
 
-  function loadCSS(href) {
-    const existing = document.querySelector(`link[data-rosuite-css="${href}"]`);
-    if (existing) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = chrome.runtime.getURL(href);
-    link.setAttribute('data-rosuite-css', href);
-    document.head.appendChild(link);
-  }
+  // Every stylesheet is listed under content_scripts.css in manifest.json.
+  // They used to be added here as <link href="chrome-extension://...">, which
+  // Manifest V3 refuses for any file not in web_accessible_resources, so every
+  // feature but the profile card rendered unstyled, in every browser. The
+  // styles are all rs- prefixed, so loading them on every Roblox page is safe.
+  function loadCSS() {}
 
   function cleanupModules() {
     activeModules.forEach(mod => {

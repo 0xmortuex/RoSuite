@@ -30,8 +30,12 @@
     async _injectUI() {
       let anchor;
       try {
+        // Roblox rebuilt the profile page (.profile-platform-container) and
+        // none of the old anchors exist any more, so the panel waited 5 s and
+        // then landed in a fallback spot. The new page's tab row comes first;
+        // the old selectors stay for anyone still served the old page.
         anchor = await RoSuite.DOM.waitForElement(
-          '.profile-container .profile-about, .profile-about-content, .rbx-tabs-horizontal',
+          '.profile-platform-container .profile-tabs, .profile-container .profile-about, .profile-about-content, .rbx-tabs-horizontal',
           5000
         );
       } catch {
@@ -66,8 +70,11 @@
       // Quick actions
       this.container.appendChild(this._createQuickActions());
 
+      // Above the new page's tab row (right under the header); after the
+      // anchor on the old page, as before.
       if (anchor.parentNode) {
-        anchor.parentNode.insertBefore(this.container, anchor.nextSibling);
+        const before = anchor.matches && anchor.matches('.profile-tabs') ? anchor : anchor.nextSibling;
+        anchor.parentNode.insertBefore(this.container, before);
       }
       RoSuite.Motion.animateIn(this.container);
     }

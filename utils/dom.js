@@ -63,7 +63,10 @@ RoSuite.DOM = {
 
     if (options.children) {
       options.children.forEach(child => {
-        if (child instanceof HTMLElement) {
+        // Any node, text included: `instanceof HTMLElement` dropped text
+        // nodes, so "Online"/"Offline"/"In Game" beside the status dot on a
+        // profile never appeared.
+        if (child instanceof Node) {
           el.appendChild(child);
         } else if (typeof child === 'string') {
           el.appendChild(document.createTextNode(child));

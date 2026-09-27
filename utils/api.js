@@ -175,6 +175,17 @@ RoSuite.API_Client = {
 
   // Convenience methods
 
+  // The game's universe, from its place. Roblox's current game page carries
+  // neither the roblox-universe-id meta tag nor data-universe-id, so reading
+  // the page alone left Game Stats without details, votes or a player count.
+  async getUniverseIdForPlace(placeId) {
+    const data = await this.fetch('https://apis.roblox.com', '/universes/v1/places/{placeId}/universe', {
+      params: { placeId },
+      cacheTTL: RoSuite.CACHE_TTL.GAME_DETAILS,
+    });
+    return data && data.universeId ? String(data.universeId) : null;
+  },
+
   async getGameServers(placeId, cursor = '', sortOrder = 'Asc', limit = 100) {
     return this.fetch(RoSuite.API.BASE.GAMES, RoSuite.API.ENDPOINTS.GAME_SERVERS, {
       params: { placeId, sortOrder, limit, cursor },
@@ -187,6 +198,15 @@ RoSuite.API_Client = {
     return this.fetch(RoSuite.API.BASE.GAMES, RoSuite.API.ENDPOINTS.GAME_DETAILS, {
       params: { universeIds: ids },
       cacheTTL: RoSuite.CACHE_TTL.GAME_DETAILS,
+    });
+  },
+
+  // The same details, fresh: `playing` is a live count, and an hour-old copy
+  // from the cache would freeze it.
+  async getGameLive(universeId) {
+    return this.fetch(RoSuite.API.BASE.GAMES, RoSuite.API.ENDPOINTS.GAME_DETAILS, {
+      params: { universeIds: universeId },
+      skipCache: true,
     });
   },
 

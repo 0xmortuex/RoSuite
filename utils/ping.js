@@ -35,11 +35,14 @@ RoSuite.Ping = {
     for (let i = 0; i < 10; i++) {
       try {
         const start = performance.now();
-        await fetch(testUrl, {
-          method: 'HEAD',
+        // GET, not HEAD: Roblox's API refuses a cross-origin HEAD, so every
+        // sample failed and the ping read "unavailable" everywhere.
+        const res = await fetch(testUrl, {
+          method: 'GET',
           cache: 'no-store',
           credentials: 'omit',
         });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const end = performance.now();
         results.push(end - start);
       } catch (e) {

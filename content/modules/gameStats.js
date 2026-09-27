@@ -105,35 +105,38 @@
       await this._loadLiveStats();
     }
 
+    // Players come from Roblox's own live count for the game (game details,
+    // `playing`). They used to be the sum of ONE page of 100 servers sorted
+    // emptiest-first, shown as the game's total: Brookhaven read "100 active
+    // players, 100 active servers". Roblox publishes no server count, so the
+    // honest figure is a floor: players divided by the most a server holds.
     async _loadLiveStats() {
       try {
-        const data = await RoSuite.API_Client.getGameServers(this.placeId, '', 'Asc', 100);
-        if (!data || !data.data) return;
+        if (!this.universeId) await this._waitForUniverseId();
+        const [details, servers] = await Promise.all([
+          this.universeId ? RoSuite.API_Client.getGameLive(this.universeId).catch(() => null) : null,
+          RoSuite.API_Client.getGameServers(this.placeId, '', 'Desc', 100).catch(() => null),
+        ]);
+        const game = details && details.data && details.data[0];
+        const sample = (servers && servers.data) || [];
+        this.serverData = sample;
+        if (!game && !sample.length) throw new Error('no data');
 
-        this.serverData = data.data;
+        const playing = game ? (game.playing || 0) : null;
+        const maxPlayers = (game && game.maxPlayers) || Math.max(0, ...sample.map(s => s.maxPlayers || 0));
+        if (playing != null && playing > this.peakPlayers) this.peakPlayers = playing;
 
-        let totalPlayers = 0;
-        let totalServers = data.data.length;
-        let maxPerServer = 0;
-
-        data.data.forEach(server => {
-          totalPlayers += server.playing || 0;
-          if (server.maxPlayers > maxPerServer) maxPerServer = server.maxPlayers;
-        });
-
-        if (totalPlayers > this.peakPlayers) {
-          this.peakPlayers = totalPlayers;
-        }
-
-        const avgPlayers = totalServers > 0 ? (totalPlayers / totalServers).toFixed(1) : '0';
+        const sampled = sample.reduce((n, s) => n + (s.playing || 0), 0);
+        const avgBusy = sample.length ? (sampled / sample.length).toFixed(1) : '—';
+        const minServers = playing && maxPlayers ? Math.ceil(playing / maxPlayers) : null;
 
         this.statsGrid.innerHTML = '';
 
         const stats = [
-          { label: 'Active Players', value: RoSuite.DOM.formatNumber(totalPlayers), className: 'rs-stat-players' },
-          { label: 'Active Servers', value: RoSuite.DOM.formatNumber(totalServers), className: '' },
-          { label: 'Avg per Server', value: avgPlayers, className: '' },
-          { label: 'Session Peak', value: RoSuite.DOM.formatNumber(this.peakPlayers), className: 'rs-stat-peak' },
+          { label: 'Playing now', value: playing != null ? RoSuite.DOM.formatNumber(playing) : '—', className: 'rs-stat-players' },
+          { label: 'Servers (at least)', value: minServers != null ? RoSuite.DOM.formatNumber(minServers) : '—', className: '' },
+          { label: 'Avg in busiest ' + (sample.length || 100), value: avgBusy, className: '' },
+          { label: 'Peak this visit', value: this.peakPlayers ? RoSuite.DOM.formatNumber(this.peakPlayers) : '—', className: 'rs-stat-peak' },
         ];
 
         stats.forEach(stat => {
@@ -150,7 +153,7 @@
         RoSuite.Motion.staggerIn(this.statsGrid.querySelectorAll('.rs-stat-card'));
 
         // Update server distribution chart
-        this._renderDistributionChart(data.data);
+        this._renderDistributionChart(sample);
       } catch (e) {
         RoSuite.DOM.logError('GameStats: Failed to load live stats:', e);
         this.statsGrid.innerHTML = '<div class="rs-sb-error">Could not load live stats</div>';
@@ -290,7 +293,7 @@
       const maxCount = Math.max(...buckets.map(b => b.count), 1);
 
       this.chartContainer.innerHTML = `
-        <div class="rs-chart-title">Server Fill Distribution</div>
+        <div class="rs-chart-title">How full the ${servers.length} busiest servers are</div>
         <div class="rs-chart">
           ${buckets.map(bucket => {
             const height = (bucket.count / maxCount) * 100;
@@ -306,13 +309,17 @@
       `;
     }
 
+    // From the page if it says, otherwise from Roblox's place-to-universe
+    // lookup. Three callers ask at once on load; they share one request.
     async _waitForUniverseId() {
-      // Try multiple times to get the universe ID
-      for (let i = 0; i < 10; i++) {
-        this.universeId = RoSuite.DOM.getUniverseId();
-        if (this.universeId) return;
-        await new Promise(r => setTimeout(r, 500));
+      this.universeId = this.universeId || RoSuite.DOM.getUniverseId();
+      if (this.universeId) return;
+      if (!this._universeLookup) {
+        this._universeLookup = RoSuite.API_Client.getUniverseIdForPlace(this.placeId)
+          .then(id => { this.universeId = id; })
+          .catch(e => { RoSuite.DOM.logError('GameStats: could not find the universe:', e); });
       }
+      await this._universeLookup;
     }
   }
 

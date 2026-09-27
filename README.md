@@ -5,7 +5,7 @@ A free, open-source Chrome/Brave extension that enhances Roblox with a server br
 ## Features
 
 ### Server Browser
-Enhanced server list on game pages with sorting (player count, server age), filtering (player range, hide full/empty), player name search, and a **Join Server** button to connect directly to specific servers.
+Enhanced server list on game pages with sorting (busiest or emptiest first, best connection), filtering (player range, hide full/empty), player name search, and a **Join Server** button to connect directly to specific servers.
 
 ### Player Info
 Detailed player information in server lists including avatar thumbnails, display names, account age badges, online status, and friend highlighting.
@@ -17,15 +17,25 @@ Adds account value (RAP), account age, online activity status, mutual friends, a
 Value calculator on the trades page showing RAP for each side, fairness indicators (fair/slight win/big loss), and detailed item breakdowns.
 
 ### Game Stats
-Enhanced statistics panel on game pages with live player/server counts, approval rating bar, server fill distribution chart, and detailed game info cards.
+Enhanced statistics panel on game pages with the live player count, a minimum server count, approval rating bar, how full the busiest servers are, and detailed game info cards.
 
 ## Installation
 
-1. Clone or download this repository
-2. Open Chrome/Brave and navigate to `chrome://extensions/`
-3. Enable **Developer mode** (toggle in top right)
-4. Click **Load unpacked** and select the `rosuite` folder
-5. Visit any Roblox page — RoSuite will activate automatically
+**In Vex:** Settings › Extensions › *Extensions worth installing* › RoSuite › **Install**. Press it again later to update.
+
+**In Chrome or Brave:**
+1. Download `RoSuite-<version>.zip` from [Releases](https://github.com/0xmortuex/RoSuite/releases/latest) and unzip it
+2. Open `chrome://extensions/` and turn on **Developer mode** (top right)
+3. Click **Load unpacked** and pick the unzipped folder
+4. Visit any Roblox page — RoSuite activates automatically
+
+## What's new in 1.1.0
+
+- **Every feature is styled again.** The per-feature stylesheets were added as `<link>`s to extension files, which Manifest V3 refuses unless they are web-accessible, so the server browser, game stats, trade calculator and player info rendered unstyled in every browser. They now load through the manifest.
+- **Game Stats shows the real numbers.** It summed one page of 100 servers, emptiest first, and called that the game's total ("100 active players" for a game with half a million). It now shows Roblox's live player count, a minimum server count, and labels the fill chart as the busiest 100 servers. The game's details and votes load again too: the universe ID is looked up from the place when the page no longer carries it.
+- **The server browser lists the busiest servers first.** It always fetched the emptiest and re-sorted those, so "High→Low" was a list of one-player servers. "Newest/Oldest First" are gone: they sorted by a random server ID that says nothing about age.
+- **Profiles fit Roblox's new profile page.** The panel sits under the header instead of waiting five seconds for elements that no longer exist; Activity shows its status again ("Online", "Offline", "In Game") — the words were being dropped.
+- **Ping works.** Calibration used HEAD requests, which Roblox's API refuses cross-origin, so it always read "unavailable".
 
 ## Permissions
 

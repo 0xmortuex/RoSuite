@@ -46,7 +46,8 @@
       const settings = await new Promise(r =>
         chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, r)
       );
-      this.sortMode = settings.serverBrowserSort || 'players-high';
+      // 'newest'/'oldest' were saved by older versions; those sorts are gone.
+      this.sortMode = ['players-high', 'players-low', 'ping'].includes(settings.serverBrowserSort) ? settings.serverBrowserSort : 'players-high';
       this.filters.hideFull = settings.serverBrowserHideFull || false;
       this.filters.hideEmpty = settings.serverBrowserHideEmpty || false;
 
@@ -193,17 +194,21 @@
         classes: ['rs-select'],
         events: {
           change: (e) => {
+            const wasOrder = this._apiOrder();
             this.sortMode = e.target.value;
-            this._applyFiltersAndSort();
+            // Busiest-first and emptiest-first are different pages from Roblox,
+            // not the same 100 servers in another order.
+            if (this._apiOrder() !== wasOrder) this._refreshServers();
+            else this._applyFiltersAndSort();
           },
         },
       });
 
+      // "Newest/Oldest First" sorted by the server's id, a random GUID that
+      // says nothing about its age, so both options were removed.
       const options = [
         { value: 'players-high', text: 'Players (High→Low)' },
         { value: 'players-low', text: 'Players (Low→High)' },
-        { value: 'newest', text: 'Newest First' },
-        { value: 'oldest', text: 'Oldest First' },
         { value: 'ping', text: 'Best Connection' },
       ];
 
@@ -337,7 +342,10 @@
       this.loadMoreBtn.style.display = 'none';
 
       try {
-        const data = await RoSuite.API_Client.getGameServers(this.placeId, this.cursor);
+        // Ask Roblox for the order wanted. It used to always ask for the
+        // emptiest first and re-sort those locally, so "High→Low" listed a
+        // hundred servers with one player each.
+        const data = await RoSuite.API_Client.getGameServers(this.placeId, this.cursor, this._apiOrder());
 
         if (data && data.data) {
           this.servers.push(...data.data);
@@ -370,6 +378,8 @@
         }
       }
     }
+
+    _apiOrder() { return this.sortMode === 'players-low' ? 'Asc' : 'Desc'; }
 
     async _refreshServers() {
       this.servers = [];
@@ -408,17 +418,6 @@
           break;
         case 'players-low':
           filtered.sort((a, b) => (a.playing || 0) - (b.playing || 0));
-          break;
-        case 'newest':
-          filtered.sort((a, b) => {
-            // Use server id as proxy for age (higher = newer)
-            return (b.id || '').localeCompare(a.id || '');
-          });
-          break;
-        case 'oldest':
-          filtered.sort((a, b) => {
-            return (a.id || '').localeCompare(b.id || '');
-          });
           break;
         case 'ping':
           filtered.sort((a, b) => {
