@@ -239,3 +239,24 @@
   border-color: var(--rs-border);
   background: var(--rs-bg-primary);
 }
+
+/* Friends playing this game, with a Join for each */
+.rs-friends-here {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--rs-border);
+  font-size: 12px;
+}
+.rs-friends-label { color: var(--rs-text-muted); margin-right: 2px; }
+.rs-friend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid var(--rs-border);
+  border-radius: 999px;
+}
+.rs-friend-chip:not(:has(button)) { padding-right: 10px; color: var(--rs-text-muted); }

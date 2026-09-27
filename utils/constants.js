@@ -3,7 +3,7 @@
  */
 const RoSuite = window.RoSuite || {};
 
-RoSuite.VERSION = '1.0.0';
+RoSuite.VERSION = '1.2.0';
 RoSuite.DEBUG = false;
 
 RoSuite.API = {

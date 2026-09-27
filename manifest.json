@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "RoSuite",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Free, open-source Roblox enhancement suite — server browser, player info, profile upgrades, trade calculator, and game stats.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
   "host_permissions": [
     "https://*.roblox.com/*",
@@ -18,7 +19,10 @@
     "https://inventory.roblox.com/*",
     "https://trades.roblox.com/*",
     "https://presence.roblox.com/*",
-    "https://gamejoin.roblox.com/*"
+    "https://gamejoin.roblox.com/*",
+    "https://apis.roblox.com/*",
+    "https://api.rolimons.com/*",
+    "https://ipwho.is/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -33,6 +37,9 @@
         "utils/api.js",
         "utils/ping.js",
         "utils/motion.js",
+        "utils/region.js",
+        "utils/values.js",
+        "utils/playtime.js",
         "content/modules/playerInfo.js",
         "content/modules/serverBrowser.js",
         "content/modules/profileEnhance.js",

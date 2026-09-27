@@ -205,3 +205,10 @@
   margin-left: 8px;
   font-variant-numeric: tabular-nums;
 }
+
+/* Projected items (Rolimons): RAP pushed above what the item is worth */
+.rs-offer-projected {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--rs-warning);
+}

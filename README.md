@@ -10,6 +10,12 @@ Enhanced server list on game pages with sorting (busiest or emptiest first, best
 ### Player Info
 Detailed player information in server lists including avatar thumbnails, display names, account age badges, online status, and friend highlighting.
 
+### Server Regions, Friends Here, Small Servers
+Where each server is and a Nearest-to-you sort (opt-in), which friends are playing the game with a Join button, and one click into a small server.
+
+### Playtime
+How long you have played each game, kept in your browser: recently played in the popup, your time on each game page.
+
 ### Profile Enhancements
 Adds account value (RAP), account age, online activity status, mutual friends, and quick actions (copy profile link, copy user ID, view inventory) to user profile pages.
 
@@ -28,6 +34,19 @@ Enhanced statistics panel on game pages with the live player count, a minimum se
 2. Open `chrome://extensions/` and turn on **Developer mode** (top right)
 3. Click **Load unpacked** and pick the unzipped folder
 4. Visit any Roblox page — RoSuite activates automatically
+
+## What's new in 1.2.0
+
+- **Server regions** — where each server is ("Frankfurt am Main, DE · 1,860 km") and a **Nearest to you** sort. Replaces the per-server "Est. Ping", which timed a web request and said nothing about where a game server is. Roblox gives the server's address when you're signed in; ipwho.is turns it into a city, so it is **off until you switch it on** in the options.
+- **Friends here** — on a game page, which of your friends are playing it right now, with a Join button for each (when their privacy shows the server).
+- **Join a small server** — one button into the emptiest server that still has players and room for you.
+- **Playtime** — how long you have played each game, counted from your own Roblox status every two minutes and kept in this browser. Recently played is in the popup; your time shows on each game page. Switch it off in the options.
+- **Rolimons values in trades** — each item valued by Rolimons instead of RAP, with projected items flagged. Off until you switch it on (it downloads Rolimons' public item list hourly).
+- **The trade calculator shows values at all.** Roblox's trade list carries no items, so the breakdown never appeared; each trade's details are now loaded, and your side is found by your user ID rather than assumed first.
+- **Signed-in requests work.** Roblox needs a CSRF token on every signed-in POST; without it, Activity, joins and trades failed for anyone signed in.
+- Two settings changed in quick succession no longer lose the first one.
+
+Tests: `node --test tests/logic.test.js`
 
 ## What's new in 1.1.0
 

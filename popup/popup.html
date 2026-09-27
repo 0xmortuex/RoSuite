@@ -12,7 +12,7 @@
       <div class="rs-popup-logo">RS</div>
       <div class="rs-popup-title">
         <span class="rs-popup-name">RoSuite</span>
-        <span class="rs-popup-version" id="rs-version">v1.0.0</span>
+        <span class="rs-popup-version" id="rs-version"></span>
       </div>
     </div>
 
@@ -55,6 +55,11 @@
       </div>
     </div>
 
+    <div class="rs-popup-played" id="rs-played" hidden>
+      <div class="rs-popup-played-title">Recently played</div>
+      <ol id="rs-played-list"></ol>
+    </div>
+
     <div class="rs-popup-actions">
       <button class="rs-popup-btn" id="rs-clear-cache">Clear Cache</button>
     </div>
@@ -66,6 +71,7 @@
     </div>
   </div>
 
+  <script src="../utils/playtime.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -229,6 +229,13 @@
           { label: 'Favorites', value: game.favoritedCount ? RoSuite.DOM.formatNumber(game.favoritedCount) : 'Unknown' },
         ];
 
+        // Your own time in this game, from the playtime tracker (kept locally).
+        const played = await new Promise(r => chrome.runtime.sendMessage({ type: 'GET_PLAYTIME' }, s => r(chrome.runtime.lastError ? null : s)));
+        const mine = RoSuite.Playtime.forPlace(played, this.placeId, this.universeId);
+        if (mine && mine.minutes) {
+          details.push({ label: 'You’ve played', value: RoSuite.Playtime.format(mine.minutes) + (mine.sessions > 1 ? ' in ' + mine.sessions + ' sessions' : '') });
+        }
+
         details.forEach(detail => {
           const card = RoSuite.DOM.createElement('div', {
             classes: ['rs-info-card'],

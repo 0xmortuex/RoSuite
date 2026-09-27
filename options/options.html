@@ -103,7 +103,7 @@
           <select data-setting="serverBrowserSort" class="rs-option-select">
             <option value="players-high">Players (High to Low)</option>
             <option value="players-low">Players (Low to High)</option>
-            <option value="ping">Best Connection</option>
+            <option value="nearest">Nearest to you (needs Server regions)</option>
           </select>
         </div>
         <div class="rs-option-row">
@@ -185,11 +185,46 @@
         </div>
       </section>
 
+      <!-- Extras -->
+      <section class="rs-options-section">
+        <h2>Extras</h2>
+        <div class="rs-option-row">
+          <div class="rs-option-info">
+            <span class="rs-option-label">Server regions</span>
+            <span class="rs-option-desc">Show where each server is (city and distance from you) and sort by nearest. Roblox gives the server's address; <strong>ipwho.is</strong> turns it into a city, so those addresses and yours are sent there. Needs you signed in to Roblox.</span>
+          </div>
+          <label class="rs-switch">
+            <input type="checkbox" data-setting="serverRegions">
+            <span class="rs-switch-slider"></span>
+          </label>
+        </div>
+        <div class="rs-option-row">
+          <div class="rs-option-info">
+            <span class="rs-option-label">Rolimons values in trades</span>
+            <span class="rs-option-desc">Value each item by Rolimons instead of RAP, and flag projected items (RAP pushed above their worth). Downloads Rolimons' public item list from <strong>rolimons.com</strong> once an hour.</span>
+          </div>
+          <label class="rs-switch">
+            <input type="checkbox" data-setting="rolimonsValues">
+            <span class="rs-switch-slider"></span>
+          </label>
+        </div>
+        <div class="rs-option-row">
+          <div class="rs-option-info">
+            <span class="rs-option-label">Playtime tracker</span>
+            <span class="rs-option-desc">Checks your own Roblox status every 2 minutes and adds up how long you play each game. Only Roblox is asked; the totals stay in this browser. Shown in the popup and on game pages.</span>
+          </div>
+          <label class="rs-switch">
+            <input type="checkbox" data-setting="playtimeTracking" checked>
+            <span class="rs-switch-slider"></span>
+          </label>
+        </div>
+      </section>
+
       <!-- About -->
       <section class="rs-options-section">
         <h2>About</h2>
         <div class="rs-about">
-          <p><strong>RoSuite</strong> v1.0.0</p>
+          <p><strong>RoSuite</strong> v1.2.0</p>
           <p>Free, open-source Roblox enhancement suite.</p>
           <p>Built by <strong>0xmortuex</strong></p>
           <div class="rs-about-links">

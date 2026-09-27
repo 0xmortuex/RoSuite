@@ -87,6 +87,10 @@
     async _loadTrades() {
       this._showLoadingSkeleton();
 
+      // Rolimons values when switched on (RoSuite.Values); RAP otherwise.
+      const table = await RoSuite.Values.fetchTable();
+      this.valueTable = table && table.ok ? table.items : null;
+
       try {
         // Try loading inbound trades
         const inbound = await RoSuite.API_Client.getTrades('Inbound');
@@ -119,7 +123,10 @@
             );
 
             section.data.data.slice(0, 10).forEach(trade => {
-              sectionEl.appendChild(this._createTradeCard(trade));
+              const card = this._createTradeCard(trade);
+              sectionEl.appendChild(card);
+              // The list has no items; each trade's own details do.
+              if (!trade.offers) this._fillTradeDetails(card, trade);
             });
 
             this.tradeList.appendChild(sectionEl);
@@ -183,24 +190,7 @@
       card.appendChild(topRow);
 
       // If we have offer details, show value breakdown
-      if (trade.offers && trade.offers.length >= 2) {
-        const myOffer = trade.offers[0];
-        const theirOffer = trade.offers[1];
-
-        const myRAP = this._calculateOfferRAP(myOffer);
-        const theirRAP = this._calculateOfferRAP(theirOffer);
-
-        const breakdown = RoSuite.DOM.createElement('div', {
-          classes: ['rs-trade-breakdown'],
-          children: [
-            this._createOfferSummary('Your Side', myRAP, myOffer),
-            this._createFairnessIndicator(myRAP, theirRAP),
-            this._createOfferSummary('Their Side', theirRAP, theirOffer),
-          ],
-        });
-
-        card.appendChild(breakdown);
-      }
+      if (trade.offers && trade.offers.length >= 2) card.appendChild(this._breakdown(trade));
 
       // Analyze button
       card.appendChild(
@@ -216,11 +206,53 @@
       return card;
     }
 
+    // Your side is the offer whose user is you, not whichever comes first.
+    _sides(trade) {
+      const me = String(RoSuite.DOM.getLoggedInUserId() || '');
+      const offers = trade.offers || [];
+      const mine = offers.find(o => o.user && String(o.user.id) === me) || offers[0];
+      const theirs = offers.find(o => o !== mine) || offers[1];
+      return { mine, theirs };
+    }
+
+    _breakdown(trade) {
+      const { mine, theirs } = this._sides(trade);
+      const myValue = this._calculateOfferRAP(mine);
+      const theirValue = this._calculateOfferRAP(theirs);
+      return RoSuite.DOM.createElement('div', {
+        classes: ['rs-trade-breakdown'],
+        children: [
+          this._createOfferSummary('Your Side', myValue, mine),
+          this._createFairnessIndicator(myValue, theirValue),
+          this._createOfferSummary('Their Side', theirValue, theirs),
+        ],
+      });
+    }
+
+    async _fillTradeDetails(card, trade) {
+      try {
+        const full = await RoSuite.API_Client.getTradeDetails(trade.id);
+        if (!full || !full.offers || full.offers.length < 2) return;
+        trade.offers = full.offers;
+        const btn = card.querySelector('.rs-btn');
+        card.insertBefore(this._breakdown(trade), btn || null);
+      } catch (e) {
+        RoSuite.DOM.logError('TradeCalc: could not load trade ' + trade.id + ':', e);
+      }
+    }
+
+    // An offer's worth: Rolimons value per item when switched on (RAP when an
+    // item has no value there), RAP otherwise; Robux counts at face value.
     _calculateOfferRAP(offer) {
-      if (!offer || !offer.userAssets) return 0;
-      return offer.userAssets.reduce((sum, item) => {
-        return sum + (item.recentAveragePrice || 0);
-      }, 0) + (offer.robux || 0);
+      if (!offer || !offer.userAssets) return (offer && offer.robux) || 0;
+      const items = offer.userAssets.map(item => ({ id: item.assetId, rap: item.recentAveragePrice || 0 }));
+      return RoSuite.Values.side(items, this.valueTable).worth + (offer.robux || 0);
+    }
+
+    _projectedIn(offer) {
+      if (!this.valueTable || !offer || !offer.userAssets) return 0;
+      const items = offer.userAssets.map(item => ({ id: item.assetId, rap: item.recentAveragePrice || 0 }));
+      return RoSuite.Values.side(items, this.valueTable).projected;
     }
 
     _createOfferSummary(label, totalRAP, offer) {
@@ -242,10 +274,17 @@
           valueEl,
           RoSuite.DOM.createElement('div', {
             classes: ['rs-offer-detail'],
-            text: `${itemCount} items${robux > 0 ? ` + R$ ${RoSuite.DOM.formatNumber(robux)}` : ''}`,
+            text: `${itemCount} items${robux > 0 ? ` + R$ ${RoSuite.DOM.formatNumber(robux)}` : ''}` + (this.valueTable ? ' · Rolimons value' : ' · RAP'),
           }),
         ],
       });
+      const projected = this._projectedIn(offer);
+      if (projected) {
+        summary.appendChild(RoSuite.DOM.createElement('div', {
+          classes: ['rs-offer-projected'],
+          text: `${projected} projected item${projected === 1 ? '' : 's'} (RAP pushed above worth)`,
+        }));
+      }
 
       RoSuite.Motion.countUp(valueEl, totalRAP, {
         prefix: 'R$ ',
@@ -327,7 +366,12 @@
                   }),
                   RoSuite.DOM.createElement('span', {
                     classes: ['rs-trade-item-rap'],
-                    text: `RAP: R$ ${RoSuite.DOM.formatNumber(item.recentAveragePrice || 0)}`,
+                    text: (() => {
+                      const v = this.valueTable ? RoSuite.Values.parse(this.valueTable[String(item.assetId)]) : null;
+                      const rap = `RAP: R$ ${RoSuite.DOM.formatNumber(item.recentAveragePrice || 0)}`;
+                      if (!v) return rap;
+                      return (v.value != null ? `Value: R$ ${RoSuite.DOM.formatNumber(v.value)} · ` : '') + rap + (v.projected ? ' · Projected' : '') + (v.demand ? ' · Demand: ' + v.demand : '');
+                    })(),
                   }),
                 ],
               });

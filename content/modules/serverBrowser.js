@@ -19,7 +19,10 @@
       this.friendIds = new Set();
       this.loggedInUserId = null;
       this.sortMode = 'players-high';
-      this.pingResults = new Map(); // serverId -> { ping, quality }
+      this.regions = new Map();     // serverId -> { label, km } or { error }
+      this.regionsOn = false;
+      this.REGION_BATCH = 25;       // join lookups at a time: Roblox rate-limits them
+      this.myLocation = null;
       this.pingChecking = false;
       this.filters = {
         minPlayers: 0,
@@ -46,13 +49,17 @@
       const settings = await new Promise(r =>
         chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, r)
       );
-      // 'newest'/'oldest' were saved by older versions; those sorts are gone.
-      this.sortMode = ['players-high', 'players-low', 'ping'].includes(settings.serverBrowserSort) ? settings.serverBrowserSort : 'players-high';
+      // 'newest'/'oldest' (and 'ping', now 'nearest') were saved by older
+      // versions; those sorts are gone.
+      this.sortMode = ['players-high', 'players-low', 'nearest'].includes(settings.serverBrowserSort) ? settings.serverBrowserSort : 'players-high';
+      this.regionsOn = settings.serverRegions === true;
+      if (this.sortMode === 'nearest' && !this.regionsOn) this.sortMode = 'players-high';
       this.filters.hideFull = settings.serverBrowserHideFull || false;
       this.filters.hideEmpty = settings.serverBrowserHideEmpty || false;
 
       await this._injectUI();
       await this._loadServers();
+      if (this.loggedInUserId) this._showFriendsHere();
 
       // Measure base latency in background
       RoSuite.Ping.measureBaseLatency().then(latency => {
@@ -117,6 +124,12 @@
             children: [
               this._createSortDropdown(),
               RoSuite.DOM.createElement('button', {
+                classes: ['rs-btn', 'rs-btn-sm', 'rs-small-server-btn'],
+                text: 'Join a small server',
+                attrs: { title: 'Joins the emptiest server that still has players and room for you' },
+                events: { click: (e) => this._joinSmallServer(e.currentTarget) },
+              }),
+              RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-sm'],
                 text: 'Refresh',
                 events: { click: () => this._refreshServers() },
@@ -158,24 +171,31 @@
         html: '<span class="rs-latency-label">Est. ping to Roblox:</span> <span class="rs-latency-value" title="Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.">calibrating...</span>',
       });
 
-      // Ping all visible servers button
+      // Where the servers are (RoSuite.Region). The per-server "Est. Ping"
+      // this replaces timed a web request, which says nothing about where a
+      // game server is.
       this.pingAllBtn = RoSuite.DOM.createElement('button', {
         classes: ['rs-btn', 'rs-btn-sm', 'rs-ping-all-btn'],
-        text: 'Check All Pings',
-        events: { click: () => this._pingAllServers() },
+        text: 'Find regions',
+        attrs: { title: 'Where the first ' + this.REGION_BATCH + ' servers are. Needs you signed in to Roblox.' },
+        events: { click: () => this._findRegions() },
       });
       this.latencyBar.appendChild(this.pingAllBtn);
 
-      // Ping disclaimer
       const disclaimer = RoSuite.DOM.createElement('span', {
         classes: ['rs-ping-disclaimer'],
-        text: 'Ping estimates are approximate',
+        text: this.regionsOn ? 'Regions: city of the server’s address' : 'Server regions are off — switch them on in RoSuite’s options',
       });
       this.latencyBar.appendChild(disclaimer);
+      if (!this.regionsOn) this.pingAllBtn.style.display = 'none';
+
+      // Friends playing this game, with a way in.
+      this.friendsBox = RoSuite.DOM.createElement('div', { classes: ['rs-friends-here'], style: { display: 'none' } });
 
       this.container.appendChild(header);
       this.container.appendChild(filterBar);
       this.container.appendChild(this.latencyBar);
+      this.container.appendChild(this.friendsBox);
       this.container.appendChild(this.serverList);
       this.container.appendChild(this.loadingEl);
       this.container.appendChild(this.loadMoreBtn);
@@ -209,7 +229,7 @@
       const options = [
         { value: 'players-high', text: 'Players (High→Low)' },
         { value: 'players-low', text: 'Players (Low→High)' },
-        { value: 'ping', text: 'Best Connection' },
+        ...(this.regionsOn ? [{ value: 'nearest', text: 'Nearest to you' }] : []),
       ];
 
       options.forEach(opt => {
@@ -419,13 +439,12 @@
         case 'players-low':
           filtered.sort((a, b) => (a.playing || 0) - (b.playing || 0));
           break;
-        case 'ping':
+        case 'nearest':
+          // Servers not placed yet go last, busiest first among themselves.
           filtered.sort((a, b) => {
-            const pa = this.pingResults.get(a.id);
-            const pb = this.pingResults.get(b.id);
-            const pingA = pa ? pa.ping : 99999;
-            const pingB = pb ? pb.ping : 99999;
-            return pingA - pingB;
+            const da = this.regions.get(a.id), db = this.regions.get(b.id);
+            const ka = da && da.km != null ? da.km : Infinity, kb = db && db.km != null ? db.km : Infinity;
+            return ka - kb || (b.playing || 0) - (a.playing || 0);
           });
           break;
       }
@@ -501,14 +520,14 @@
           RoSuite.DOM.createElement('div', {
             classes: ['rs-server-actions'],
             children: [
-              RoSuite.DOM.createElement('button', {
+              ...(this.regionsOn ? [RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-sm', 'rs-ping-btn'],
-                text: 'Est. Ping',
-                attrs: { 'data-server-id': server.id, title: 'Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.' },
+                text: 'Region',
+                attrs: { 'data-server-id': server.id, title: 'Where this server is. Needs you signed in to Roblox.' },
                 events: {
-                  click: (e) => this._checkServerPing(e.target, server),
+                  click: (e) => this._checkServerRegion(e.currentTarget, server),
                 },
-              }),
+              })] : []),
               RoSuite.DOM.createElement('button', {
                 classes: ['rs-btn', 'rs-btn-primary', 'rs-btn-sm', 'rs-join-btn'],
                 text: 'Join',
@@ -641,97 +660,134 @@
       }
     }
 
+    // The place a server is, beside its fill bar: "Frankfurt, DE · 1,860 km".
     _createPingIndicator(server) {
-      const existing = this.pingResults.get(server.id);
       const el = RoSuite.DOM.createElement('span', {
         classes: ['rs-server-ping'],
-        attrs: {
-          'data-ping-for': server.id,
-          title: 'Estimated ping based on connection timing. Actual in-game ping may vary by \u00b120ms.',
-        },
+        attrs: { 'data-ping-for': server.id },
       });
-
-      if (existing) {
-        const q = RoSuite.Ping.getQuality(existing.ping);
-        el.textContent = `~${existing.ping}ms`;
-        el.style.color = q.color;
-      }
-
+      this._paintRegion(el, this.regions.get(server.id));
       return el;
     }
 
-    async _checkServerPing(btn, server) {
-      btn.textContent = '...';
+    _paintRegion(el, r) {
+      if (!el) return;
+      if (!r) { el.textContent = ''; el.removeAttribute('title'); return; }
+      if (r.error) { el.textContent = '—'; el.title = r.error; el.style.color = 'var(--rs-text-muted)'; return; }
+      el.textContent = r.label + (r.km != null ? ' · ' + RoSuite.DOM.formatNumber(r.km) + ' km' : '');
+      el.title = 'Server address ' + (r.address || '') + (r.km != null ? ', about ' + r.km + ' km from you' : '');
+      el.style.color = r.km == null ? '' : r.km < 1500 ? 'var(--rs-success)' : r.km < 5000 ? 'var(--rs-warning)' : 'var(--rs-danger)';
+    }
+
+    async _regionOf(server) {
+      if (this.regions.has(server.id)) return this.regions.get(server.id);
+      if (!this.myLocation) {
+        const me = await RoSuite.Region.myLocation();
+        this.myLocation = me && me.ok ? me.location : null;
+      }
+      const got = await RoSuite.Region.serverLocation(this.placeId, server.id);
+      const r = got.ok
+        ? { label: RoSuite.Region.label(got.location), km: RoSuite.Region.distanceKm(this.myLocation, got.location), address: got.address }
+        : { error: got.error };
+      this.regions.set(server.id, r);
+      return r;
+    }
+
+    async _checkServerRegion(btn, server) {
       btn.disabled = true;
+      btn.textContent = '…';
+      const r = await this._regionOf(server);
+      this._paintRegion(this.container.querySelector(`[data-ping-for="${server.id}"]`), r);
+      btn.textContent = r.error ? 'Region' : 'Region ✓';
+      if (r.error) btn.title = r.error;
+      btn.disabled = false;
+    }
 
+    // One at a time, a moment apart: the join API is rate-limited, and a
+    // burst of lookups would get you throttled for the join you actually want.
+    async _findRegions() {
+      if (this.pingChecking) return;
+      this.pingChecking = true;
+      const batch = this.filteredServers.filter(s => !this.regions.has(s.id)).slice(0, this.REGION_BATCH);
+      this.pingAllBtn.disabled = true;
+      let done = 0, signIn = false;
+      for (const server of batch) {
+        this.pingAllBtn.textContent = `Finding… ${done}/${batch.length}`;
+        const r = await this._regionOf(server);
+        this._paintRegion(this.container.querySelector(`[data-ping-for="${server.id}"]`), r);
+        done++;
+        if (r.error && /Sign in/.test(r.error)) { signIn = true; break; }
+        await new Promise(res => setTimeout(res, 350));
+      }
+      this.pingAllBtn.textContent = signIn ? 'Sign in to Roblox first' : 'Find more regions';
+      this.pingAllBtn.disabled = false;
+      this.pingChecking = false;
+      if (this.sortMode === 'nearest') this._applyFiltersAndSort();
+    }
+
+    // The emptiest server with somebody in it and room for you, straight in.
+    async _joinSmallServer(btn) {
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Finding…';
       try {
-        const result = await RoSuite.Ping.estimateServerPing(this.placeId, server.id);
-        const quality = RoSuite.Ping.getQuality(result.ping);
-
-        this.pingResults.set(server.id, result);
-
-        // Update ping indicator on the card
-        const indicator = this.container.querySelector(`[data-ping-for="${server.id}"]`);
-        if (indicator) {
-          indicator.textContent = `~${result.ping}ms`;
-          indicator.style.color = quality.color;
-        }
-
-        btn.textContent = `~${result.ping}ms`;
-        btn.style.color = quality.color;
+        const data = await RoSuite.API_Client.getGameServers(this.placeId, '', 'Asc', 100);
+        const pick = RoSuite.Region.smallServer(data && data.data);
+        if (!pick) { btn.textContent = 'None free right now'; setTimeout(() => { btn.textContent = label; }, 2500); return; }
+        btn.textContent = `Joining (${pick.playing}/${pick.maxPlayers})…`;
+        this._joinServer(pick);
+        setTimeout(() => { btn.textContent = label; }, 4000);
       } catch (e) {
-        btn.textContent = 'Err';
+        RoSuite.DOM.logError('Join a small server failed:', e);
+        btn.textContent = 'Could not load servers';
+        setTimeout(() => { btn.textContent = label; }, 2500);
       } finally {
         btn.disabled = false;
       }
     }
 
-    async _pingAllServers() {
-      if (this.pingChecking) return;
-      this.pingChecking = true;
-
-      const serverIds = this.filteredServers.map(s => s.id);
-      const total = serverIds.length;
-
-      this.pingAllBtn.disabled = true;
-      this.pingAllBtn.textContent = `Checking... 0/${total}`;
-
+    // Friends playing this game right now, from their presence. Roblox shows
+    // the server only when a friend's privacy allows it; otherwise they are
+    // listed without a Join button.
+    async _showFriendsHere() {
       try {
-        await RoSuite.Ping.batchCheckPing(
-          this.placeId,
-          serverIds,
-          (done, totalCount, result) => {
-            this.pingAllBtn.textContent = `Checking... ${done}/${totalCount}`;
-            this.pingResults.set(result.serverId, result);
-
-            // Update the ping indicator in the rendered card
-            const indicator = this.container.querySelector(`[data-ping-for="${result.serverId}"]`);
-            if (indicator) {
-              indicator.textContent = `~${result.ping}ms`;
-              indicator.style.color = result.quality.color;
-            }
-
-            // Update the ping button too
-            const pingBtn = this.container.querySelector(`[data-server-id="${result.serverId}"]`);
-            if (pingBtn) {
-              pingBtn.textContent = `~${result.ping}ms`;
-              pingBtn.style.color = result.quality.color;
-            }
+        const data = await RoSuite.API_Client.getUserFriends(this.loggedInUserId);
+        const ids = ((data && data.data) || []).map(f => f.id).filter(Boolean);
+        if (!ids.length) return;
+        const here = [];
+        for (let i = 0; i < ids.length; i += 100) {
+          const p = await RoSuite.API_Client.getUserPresence(ids.slice(i, i + 100));
+          for (const u of (p && p.userPresences) || []) {
+            if (u.userPresenceType !== 2) continue;
+            const sameGame = String(u.placeId) === String(this.placeId) || String(u.rootPlaceId) === String(this.placeId) || (this.universeId && String(u.universeId) === String(this.universeId));
+            if (sameGame) here.push(u);
           }
-        );
-
-        this.pingAllBtn.textContent = 'Re-check Pings';
-
-        // If sorted by ping, re-sort
-        if (this.sortMode === 'ping') {
-          this._applyFiltersAndSort();
         }
+        if (!here.length) return;
+        const names = {};
+        try {
+          const users = await RoSuite.API_Client.getUsersByIds(here.map(u => u.userId));
+          for (const u of (users && users.data) || []) names[u.id] = u.displayName || u.name;
+        } catch { /* names are a nicety */ }
+        this.friendsBox.innerHTML = '';
+        this.friendsBox.appendChild(RoSuite.DOM.createElement('span', { classes: ['rs-friends-label'], text: here.length === 1 ? 'A friend is playing:' : here.length + ' friends are playing:' }));
+        for (const u of here) {
+          const chip = RoSuite.DOM.createElement('span', { classes: ['rs-friend-chip'] });
+          chip.appendChild(document.createTextNode(names[u.userId] || ('User ' + u.userId)));
+          if (u.gameId) {
+            chip.appendChild(RoSuite.DOM.createElement('button', {
+              classes: ['rs-btn', 'rs-btn-primary', 'rs-btn-sm'],
+              text: 'Join',
+              events: { click: () => this._joinServer({ id: u.gameId }) },
+            }));
+          } else {
+            chip.title = 'Their privacy settings hide which server';
+          }
+          this.friendsBox.appendChild(chip);
+        }
+        this.friendsBox.style.display = '';
       } catch (e) {
-        RoSuite.DOM.logError('Batch ping failed:', e);
-        this.pingAllBtn.textContent = 'Check All Pings';
-      } finally {
-        this.pingChecking = false;
-        this.pingAllBtn.disabled = false;
+        RoSuite.DOM.logError('Friends here failed:', e);
       }
     }
 

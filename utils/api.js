@@ -94,12 +94,25 @@ RoSuite.API_Client = {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include', // Include Roblox session cookie
         };
+        // Roblox refuses a signed-in POST without its CSRF token: the first
+        // try comes back 403 carrying the token, and the request is sent
+        // again with it. Without this, presence (Activity), joining a
+        // server and trades all failed for anyone signed in.
+        if (req.method !== 'GET' && this._csrf) fetchOpts.headers['X-CSRF-TOKEN'] = this._csrf;
 
         if (req.body) {
           fetchOpts.body = JSON.stringify(req.body);
         }
 
         const response = await window.fetch(req.url, fetchOpts);
+
+        const token = response.headers.get('x-csrf-token');
+        if (response.status === 403 && token && !req.csrfRetried) {
+          this._csrf = token;
+          req.csrfRetried = true;
+          this._queue.unshift(req);
+          continue;
+        }
 
         if (response.status === 429) {
           // Rate limited by Roblox
@@ -241,6 +254,26 @@ RoSuite.API_Client = {
     });
   },
 
+  // Asks Roblox to let you into one server, without launching anything: the
+  // answer carries the address that server would connect you to, which is
+  // where it is (RoSuite.Region). Needs you signed in.
+  async joinGameInstance(placeId, gameId) {
+    return this.fetch('https://gamejoin.roblox.com', '/v1/join-game-instance', {
+      method: 'POST',
+      body: { placeId: parseInt(placeId, 10), gameId, isTeleport: false, gameJoinAttemptId: (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)) },
+      skipCache: true,
+    });
+  },
+
+  // Names for several users in one request (friends lists may carry only ids).
+  async getUsersByIds(userIds) {
+    return this.fetch(RoSuite.API.BASE.USERS, '/v1/users', {
+      method: 'POST',
+      body: { userIds: (userIds || []).slice(0, 100), excludeBannedUsers: true },
+      cacheTTL: RoSuite.CACHE_TTL.USER_PROFILE,
+    });
+  },
+
   async getUserFriends(userId) {
     return this.fetch(RoSuite.API.BASE.FRIENDS, RoSuite.API.ENDPOINTS.USER_FRIENDS, {
       params: { userId },
@@ -252,6 +285,15 @@ RoSuite.API_Client = {
     return this.fetch(RoSuite.API.BASE.INVENTORY, RoSuite.API.ENDPOINTS.USER_COLLECTIBLES, {
       params: { userId, sortOrder: 'Asc', limit: 100, cursor },
       cacheTTL: RoSuite.CACHE_TTL.USER_PROFILE,
+    });
+  },
+
+  // One trade with its items: the list endpoint (getTrades) carries only the
+  // partner, status and date, never the offers.
+  async getTradeDetails(tradeId) {
+    return this.fetch(RoSuite.API.BASE.TRADES, '/v1/trades/{tradeId}', {
+      params: { tradeId },
+      cacheTTL: RoSuite.CACHE_TTL.DEFAULT,
     });
   },
 
